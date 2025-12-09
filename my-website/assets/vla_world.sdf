@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="vla_world">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <model name="red_box">
+      <pose>1 0 0.5 0 0 0</pose>
+      <link name="link">
+        <visual>
+          <geometry>
+            <box>0.2 0.2 0.2</box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="blue_cylinder">
+      <pose>0 1 0.5 0 0 0</pose>
+      <link name="link">
+        <visual>
+          <geometry>
+            <cylinder>
+              <radius>0.1</radius>
+              <length>0.3</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0 0 1 1</ambient>
+            <diffuse>0 0 1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="green_sphere">
+      <pose>-1 0 0.5 0 0 0</pose>
+      <link name="link">
+        <visual>
+          <geometry>
+            <sphere>
+              <radius>0.15</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0 1 0 1</ambient>
+            <diffuse>0 1 0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

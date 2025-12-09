@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<robot name="simple_humanoid">
+  <link name="torso">
+    <visual>
+      <geometry>
+        <box size="0.4 0.6 0.2"/>
+      </geometry>
+      <material name="grey">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name="head">
+    <visual>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+      <material name="white">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="head_joint" type="fixed">
+    <parent link="torso"/>
+    <child link="head"/>
+    <origin xyz="0 0 0.175"/>
+  </joint>
+
+  <link name="left_upper_arm">
+    <visual>
+      <geometry>
+        <cylinder length="0.3" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57075 0 0"/>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="left_shoulder" type="fixed">
+    <parent link="torso"/>
+    <child link="left_upper_arm"/>
+    <origin xyz="0 0.35 0"/>
+  </joint>
+
+  <link name="right_upper_arm">
+    <visual>
+      <geometry>
+        <cylinder length="0.3" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57075 0 0"/>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="right_shoulder" type="fixed">
+    <parent link="torso"/>
+    <child link="right_upper_arm"/>
+    <origin xyz="0 -0.35 0"/>
+  </joint>
+
+  <link name="left_leg">
+    <visual>
+      <geometry>
+        <cylinder length="0.5" radius="0.07"/>
+      </geometry>
+      <origin rpy="0 0 0"/>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="left_hip" type="fixed">
+    <parent link="torso"/>
+    <child link="left_leg"/>
+    <origin xyz="0 0.15 -0.35"/>
+  </joint>
+
+  <link name="right_leg">
+    <visual>
+      <geometry>
+        <cylinder length="0.5" radius="0.07"/>
+      </geometry>
+      <origin rpy="0 0 0"/>
+      <material name="grey"/>
+    </visual>
+  </link>
+
+  <joint name="right_hip" type="fixed">
+    <parent link="torso"/>
+    <child link="right_leg"/>
+    <origin xyz="0 -0.15 -0.35"/>
+  </joint>
+</robot>
