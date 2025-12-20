@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwsh -Command \"Get-Command pwsh\")",
+      "Bash(powershell -Command \"Get-Command powershell\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/create-new-feature.ps1\" -FeatureDescription \"Website ingestion & embedding pipeline for RAG\" -Number 2 -ShortName \"website-ingestion-pipeline\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/setup-plan.ps1\" -Json)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/update-agent-context.ps1\" -AgentType claude)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -RequireTasks -IncludeTasks)",
+      "Bash(dir \"specs/002-website-ingestion-pipeline/checklists/\" -PathType Container)",
+      "Bash(powershell -Command \"Test-Path ''specs/002-website-ingestion-pipeline/checklists/''\")",
+      "Bash(powershell -Command \"Get-ChildItem ''specs/002-website-ingestion-pipeline/checklists/''\")",
+      "Bash(powershell -Command \"(Get-Content ''specs/002-website-ingestion-pipeline/checklists/requirements.md'') -match ''- \\[ \\]'' -or (Get-Content ''specs/002-website-ingestion-pipeline/checklists/requirements.md'') -match ''- \\[[xX]\\]''\")",
+      "Bash(git rev-parse --git-dir)",
+      "Bash(git fetch --all --prune)",
+      "Bash(mkdir -p Backend/src/ingestion Backend/src/config Backend/tests Backend/docs)",
+      "Bash(python -m venv .venv)",
+      "Bash(source .venv/Scripts/activate)",
+      "Bash(pip install uv)",
+      "Bash(powershell -Command \"Set-Location Backend; python -m venv .venv; & .venv\\\\Scripts\\\\Activate.ps1; pip install uv\")",
+      "Bash(.venvScriptsactivate.bat)",
+      "Bash(uv init)",
+      "Bash(pip install cohere qdrant-client python-dotenv markdown pytest)",
+      "Bash(powershell -Command \"Set-Location Backend; .\\\\.venv\\\\Scripts\\\\Activate.ps1; pip list | Select-String -Pattern ''cohere\\\\|qdrant\\\\|python-dotenv\\\\|markdown\\\\|pytest''\")",
+      "Bash(python -m pip install cohere qdrant-client python-dotenv markdown pytest)"
+    ]
+  }
+}

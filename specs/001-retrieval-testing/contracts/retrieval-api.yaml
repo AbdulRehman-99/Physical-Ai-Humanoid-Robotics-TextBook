@@ -1,0 +1,125 @@
+# Retrieval Testing Scripts Interface
+
+## Semantic Search Function
+
+### search(query, top_k=10, include_metadata=True, search_type="general", exact_match_first=False)
+
+#### Description
+Performs semantic similarity search on book content using cosine similarity
+
+#### Parameters
+```python
+query: string (the search query text)
+top_k: integer (number of results, default: 10)
+include_metadata: boolean (whether to include metadata, default: True)
+search_type: string (enum: 'general', 'selected-text', default: 'general')
+exact_match_first: boolean (for selected-text approach, default: False)
+```
+
+#### Return Value
+```python
+{
+    "query_id": "string (unique identifier for the query)",
+    "results": [
+        {
+            "chunk_id": "string (identifier for the text chunk)",
+            "text": "string (the retrieved text content)",
+            "similarity_score": "number (cosine similarity score between 0-1)",
+            "metadata": "dict (all metadata from Frontend/docs)",
+            "position": "integer (position in top-k results)"
+        }
+    ],
+    "total_results": "integer (total number of matching results)",
+    "execution_time_ms": "number (time taken for retrieval)",
+    "timestamp": "string (ISO 8601 timestamp)"
+}
+```
+
+#### Example Usage
+```python
+from Backend.src.retrieval.search import search
+
+results = search(
+    query="What is ROS 2 navigation?",
+    top_k=10,
+    include_metadata=True,
+    search_type="general"
+)
+```
+
+#### Example Return Value
+```python
+{
+    "query_id": "query-12345",
+    "results": [
+        {
+            "chunk_id": "chunk-67890",
+            "text": "ROS 2 Navigation is a system for robot path planning...",
+            "similarity_score": 0.85,
+            "metadata": {
+                "module": "module-4-advanced-integration",
+                "chapter": "ch7-whisper-llm-vla-planning",
+                "section": "navigation-systems"
+            },
+            "position": 1
+        }
+    ],
+    "total_results": 45,
+    "execution_time_ms": 125.3,
+    "timestamp": "2025-12-19T10:30:00Z"
+}
+```
+
+## Performance Measurement Function
+
+### measure_latency(search_function, query_text, iterations=100)
+
+#### Description
+Measures performance metrics for retrieval operations
+
+#### Parameters
+```python
+search_function: function (the search function to test)
+query_text: string (the query text to use for testing)
+iterations: integer (number of iterations to run, default: 100)
+```
+
+#### Return Value
+```python
+{
+    "avg_latency_ms": "number (average response time)",
+    "p95_latency_ms": "number (95th percentile response time)",
+    "throughput_qps": "number (queries per second)",
+    "stability_score": "number (consistency measure)",
+    "timestamp": "string (ISO 8601 timestamp)"
+}
+```
+
+## Validation Function
+
+### validate_relevance(query, results, expected_section)
+
+#### Description
+Validates retrieval results for accuracy and relevance
+
+#### Parameters
+```python
+query: string (the original query)
+results: list (list of retrieval results to validate)
+expected_section: string (expected book section for validation)
+```
+
+#### Return Value
+```python
+{
+    "validation_results": [
+        {
+            "result_id": "string",
+            "relevance_score": "number (0-1)",
+            "metadata_accuracy": "boolean",
+            "validation_notes": "string"
+        }
+    ],
+    "overall_accuracy": "number (0-1)"
+}
+```

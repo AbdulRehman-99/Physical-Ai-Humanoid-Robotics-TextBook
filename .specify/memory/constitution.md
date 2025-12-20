@@ -66,17 +66,6 @@ Guarantee that every chapter can be generated independently while still conformi
 ### 13. Book Structure and Chapter Requirements
 The book contain 8 chapters total across 4 modules. Each chapter will be at least 2500 words long having a headings, subheadings, paragraphs, and examples.
 
-## Book RAG Chatbot Component Principles
-
-### 14. Content-Based Answers Only
-The Book RAG Chatbot MUST answer questions only from book content or user-selected text; NEVER use external knowledge. If the answer is not present in the provided content, respond with a clear "No answer found in the provided content."
-
-### 15. Technology Stack Compliance
-The Book RAG Chatbot MUST utilize the approved technology stack: FastAPI for the backend, OpenAI Agents/ChatKit for AI interactions, Qdrant for vector storage, and Neon for database management.
-
-### 16. Accuracy and Transparency
-The Book RAG Chatbot MUST clearly indicate when information is sourced from the book content versus when no relevant information is available, maintaining transparency about the limitations of its knowledge base.
-
 ## Governance
 The Constitution establishes the foundational principles for the development and maintenance of the 'High-Performance Technical Book' and its associated Book RAG Chatbot. All content creation, bot responses, and modifications must adhere to these principles. Amendments to this constitution require a formal proposal, review by the project leads, and documented approval. Compliance with these principles will be reviewed regularly to ensure the academic and technical integrity of the book and chatbot. Any divergence from these guidelines must be explicitly justified and approved by the project leads.
 
