@@ -1,0 +1,305 @@
+openapi: 3.0.0
+info:
+  title: Humanoid Robot Control API
+  description: API for controlling humanoid robots in simulation and real environments
+  version: 1.0.0
+  contact:
+    name: Physical AI & Humanoid Robotics Book Team
+    email: team@humanoid-robotics-book.example
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://simulator.humanoid-robotics-book.example
+    description: Production simulation server
+
+paths:
+  /robots/{robotId}/joints:
+    get:
+      summary: Get current joint positions
+      description: Retrieve the current positions of all joints for a specific robot
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the robot
+      responses:
+        '200':
+          description: Joint positions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  robotId:
+                    type: string
+                    example: "hrp4-001"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-12-14T10:00:00Z"
+                  joints:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JointPosition'
+        '404':
+          description: Robot not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Set joint positions
+      description: Set target positions for the robot's joints
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the robot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                joints:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/JointTarget'
+                duration:
+                  type: number
+                  description: Time in seconds to reach target positions
+                  example: 2.0
+      responses:
+        '200':
+          description: Joint positions set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  robotId:
+                    type: string
+                    example: "hrp4-001"
+                  status:
+                    type: string
+                    example: "success"
+                  executionTime:
+                    type: number
+                    example: 2.0
+        '400':
+          description: Invalid joint positions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /robots/{robotId}/navigate:
+    post:
+      summary: Navigate to goal position
+      description: Command the robot to navigate to a specific position
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the robot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NavigationGoal'
+      responses:
+        '200':
+          description: Navigation command accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  robotId:
+                    type: string
+                    example: "hrp4-001"
+                  goalId:
+                    type: string
+                    example: "goal-001"
+                  status:
+                    type: string
+                    example: "accepted"
+        '400':
+          description: Invalid navigation goal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Robot not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /robots/{robotId}/perception:
+    get:
+      summary: Get perception data
+      description: Retrieve perception data from robot's sensors
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the robot
+        - name: sensorType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [camera, lidar, imu, force_torque]
+          description: Type of sensor data to retrieve
+      responses:
+        '200':
+          description: Perception data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  robotId:
+                    type: string
+                    example: "hrp4-001"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-12-14T10:00:00Z"
+                  sensorData:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SensorReading'
+
+components:
+  schemas:
+    JointPosition:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "left_arm_joint_1"
+        position:
+          type: number
+          format: float
+          example: 1.57
+        velocity:
+          type: number
+          format: float
+          example: 0.0
+        effort:
+          type: number
+          format: float
+          example: 5.2
+      required:
+        - name
+        - position
+
+    JointTarget:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "right_leg_joint_2"
+        position:
+          type: number
+          format: float
+          example: 0.5
+        maxVelocity:
+          type: number
+          format: float
+          example: 1.0
+      required:
+        - name
+        - position
+
+    NavigationGoal:
+      type: object
+      properties:
+        position:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 3
+          maxItems: 3
+          example: [1.0, 2.0, 0.0]
+        orientation:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example: [0.0, 0.0, 0.707, 0.707]
+        frameId:
+          type: string
+          example: "map"
+        tolerance:
+          type: number
+          format: float
+          example: 0.1
+      required:
+        - position
+
+    SensorReading:
+      type: object
+      properties:
+        sensorType:
+          type: string
+          enum: [camera, lidar, imu, force_torque]
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-14T10:00:00Z"
+        data:
+          type: object
+          description: Sensor-specific data payload
+      required:
+        - sensorType
+        - timestamp
+        - data
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid input parameters"
+        code:
+          type: string
+          example: "INVALID_PARAMS"
+        details:
+          type: object
+          description: Additional error details
+
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+security:
+  - apiKey: []
+
+tags:
+  - name: Robot Control
+    description: Endpoints for controlling robot joints and movement
+  - name: Navigation
+    description: Endpoints for robot navigation and path planning
+  - name: Perception
+    description: Endpoints for retrieving sensor data and perception results

@@ -1,34 +1,34 @@
 <!--
 Sync Impact Report:
-Version change: N/A -> 1.0.0
-List of modified principles: All principles are new.
-Added sections: Core Principles, Governance.
+Version change: 1.1.0 -> 1.2.0
+List of modified principles: Added Book RAG Chatbot component principles
+Added sections: Book RAG Chatbot Component Principles
 Removed sections: N/A
 Templates requiring updates:
 - .specify/templates/plan-template.md: ⚠ pending
 - .specify/templates/spec-template.md: ⚠ pending
 - .specify/templates/tasks-template.md: ⚠ pending
-- .gemini/commands/sp.adr.toml: ⚠ pending
-- .gemini/commands/sp.analyze.toml: ⚠ pending
-- .gemini/commands/sp.checklist.toml: ⚠ pending
-- .gemini/commands/sp.clarify.toml: ⚠ pending
-- .gemini/commands/sp.constitution.toml: ⚠ pending
-- .gemini/commands/sp.git.commit_pr.toml: ⚠ pending
-- .gemini/commands/sp.implement.toml: ⚠ pending
-- .gemini/commands/sp.phr.toml: ⚠ pending
-- .gemini/commands/sp.plan.toml: ⚠ pending
-- .gemini/commands/sp.specify.toml: ⚠ pending
-- .gemini/commands/sp.tasks.toml: ⚠ pending
+- .specify/commands/sp.adr.toml: ⚠ pending
+- .specify/commands/sp.analyze.toml: ⚠ pending
+- .specify/commands/sp.checklist.toml: ⚠ pending
+- .specify/commands/sp.clarify.toml: ⚠ pending
+- .specify/commands/sp.constitution.toml: ⚠ pending
+- .specify/commands/sp.git.commit_pr.toml: ⚠ pending
+- .specify/commands/sp.implement.toml: ⚠ pending
+- .specify/commands/sp.phr.toml: ⚠ pending
+- .specify/commands/sp.plan.toml: ⚠ pending
+- .specify/commands/sp.specify.toml: ⚠ pending
+- .specify/commands/sp.tasks.toml: ⚠ pending
 - README.md: ⚠ pending
-- docs/quickstart.md: ⚠ pending (assuming these files exist based on the prompt's general guidance)
-Follow-up TODOs: Ensure dependent templates are updated to align with the new constitution principles.
+- docs/quickstart.md: ⚠ pending
+Follow-up TODOs: Ensure dependent templates are updated to align with the updated constitution principles.
 -->
 # High-Performance Technical Book Constitution
 
 ## Core Principles
 
 ### 1. Module Alignment
-Align strictly with the “Physical AI & Humanoid Robotics” course modules and learning outcomes.
+Align strictly with the "Physical AI & Humanoid Robotics" course modules and learning outcomes.
 
 ### 2. Academic Reliability
 Maintain academically reliable, technical writing using verified robotics sources and primary documentation.
@@ -63,10 +63,21 @@ Follow official Docusaurus documentation https://docusaurus.io/docs for structur
 ### 12. Chapter Independence
 Guarantee that every chapter can be generated independently while still conforming to the global constitution.
 
-### 13. Chapter Length and Structure
-Each chapter will be at least 1000 words long having a heading, subheading, paragraph, and example.
+### 13. Book Structure and Chapter Requirements
+The book contain 8 chapters total across 4 modules. Each chapter will be at least 2500 words long having a headings, subheadings, paragraphs, and examples.
+
+## Book RAG Chatbot Component Principles
+
+### 14. Content-Based Answers Only
+The Book RAG Chatbot MUST answer questions only from book content or user-selected text; NEVER use external knowledge. If the answer is not present in the provided content, respond with a clear "No answer found in the provided content."
+
+### 15. Technology Stack Compliance
+The Book RAG Chatbot MUST utilize the approved technology stack: FastAPI for the backend, OpenAI Agents/ChatKit for AI interactions, Qdrant for vector storage, and Neon for database management.
+
+### 16. Accuracy and Transparency
+The Book RAG Chatbot MUST clearly indicate when information is sourced from the book content versus when no relevant information is available, maintaining transparency about the limitations of its knowledge base.
 
 ## Governance
-The Constitution establishes the foundational principles for the development and maintenance of the 'High-Performance Technical Book'. All content creation and modifications must adhere to these principles. Amendments to this constitution require a formal proposal, review by the project leads, and documented approval. Compliance with these principles will be reviewed regularly to ensure the academic and technical integrity of the book. Any divergence from these guidelines must be explicitly justified and approved by the project leads.
+The Constitution establishes the foundational principles for the development and maintenance of the 'High-Performance Technical Book' and its associated Book RAG Chatbot. All content creation, bot responses, and modifications must adhere to these principles. Amendments to this constitution require a formal proposal, review by the project leads, and documented approval. Compliance with these principles will be reviewed regularly to ensure the academic and technical integrity of the book and chatbot. Any divergence from these guidelines must be explicitly justified and approved by the project leads.
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-09
+**Version**: 1.2.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-16
