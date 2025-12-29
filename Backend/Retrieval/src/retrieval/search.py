@@ -9,6 +9,7 @@ from .models import (
 )
 from .logger import RetrievalLogger
 from .validation import ValidationService
+from .embedder import Embedder
 import time
 
 
@@ -23,6 +24,7 @@ class SemanticSearch:
         self.config = RetrievalConfig()
         self.logger = RetrievalLogger()
         self.validator = ValidationService()
+        self.embedder = Embedder()  # Add the embedder
 
     def search(self, request: RetrievalRequest) -> RetrievalResponse:
         """
@@ -53,21 +55,39 @@ class SemanticSearch:
         }
         self.logger.log_retrieval_request(request_data)
 
-        # For now, we'll simulate the search since we don't have actual vector embeddings
-        # In a real implementation, we would:
-        # 1. Convert the query text to a vector using an embedding model
-        # 2. Use the Qdrant client to perform the search
-        # 3. Convert the results to our data models
+        # Generate embedding for the query text
+        try:
+            query_embedding = self.embedder.embed_single_text(
+                text=sanitized_query_text,
+                model="embed-multilingual-v3.0",  # Use the correct model
+                input_type="search_query"
+            )
 
-        # For demonstration, we'll create mock results
-        results = self._create_mock_results(request)
+            # Validate the embedding dimensions
+            if not self.embedder.validate_embedding_dimensions(query_embedding):
+                self.logger.log_error(f"Invalid embedding dimensions for query: {sanitized_query_text}")
+                # Return empty results if embedding is invalid
+                results = []
+            else:
+                # Perform the actual search in Qdrant
+                search_results = self.client.search(
+                    query_vector=query_embedding,
+                    top_k=request.top_k
+                )
+
+                # Convert Qdrant results to our data models
+                results = self._convert_qdrant_results(search_results)
+
+        except Exception as e:
+            self.logger.log_error(f"Error during embedding generation or search: {e}")
+            # Return empty results in case of error
+            results = []
 
         execution_time_ms = (time.time() - start_time) * 1000
 
         # Validate results if validation is requested
-        if request.include_metadata:  # We'll use this flag to indicate validation is needed
+        if request.include_metadata and results:  # We'll use this flag to indicate validation is needed
             # In a real implementation, we would validate each result
-            # For now, we'll just log that validation would happen
             for result in results:
                 relevance_valid = self.validator.validate_relevance(result)
                 metadata_valid = self.validator.validate_metadata(result)
@@ -101,16 +121,42 @@ class SemanticSearch:
 
         return response
 
+    def _convert_qdrant_results(self, qdrant_results) -> List[RetrievalResult]:
+        """
+        Convert Qdrant search results to our RetrievalResult format.
+
+        Args:
+            qdrant_results: Raw results from Qdrant client
+
+        Returns:
+            List of RetrievalResult objects
+        """
+        results = []
+        for idx, result in enumerate(qdrant_results):
+            # Extract text content and metadata from the result
+            text_content = result.payload.get('content', '') if hasattr(result, 'payload') and result.payload else ''
+
+            # Extract metadata from payload
+            metadata = result.payload if hasattr(result, 'payload') and result.payload else {}
+
+            # Create a RetrievalResult object
+            retrieval_result = RetrievalResult(
+                id=str(result.id) if hasattr(result, 'id') else f"result-{idx}",
+                chunk_id=result.payload.get('chunk_id', f"chunk-{idx:03d}") if hasattr(result, 'payload') and result.payload else f"chunk-{idx:03d}",
+                text=text_content,
+                similarity_score=result.score if hasattr(result, 'score') else 0.0,
+                metadata=metadata,
+                position=idx + 1
+            )
+            results.append(retrieval_result)
+
+        return results
+
     def _create_mock_results(self, request: RetrievalRequest) -> List[RetrievalResult]:
         """
         Create mock results for demonstration purposes.
-        In a real implementation, this would call the Qdrant client with actual vectors.
+        This is kept for backward compatibility.
         """
-        # This is a placeholder - in a real implementation, we would:
-        # 1. Convert the query text to an embedding vector
-        # 2. Call self.client.search() with the vector
-        # 3. Convert the Qdrant results to RetrievalResult objects
-
         # Validate request parameters
         if request.top_k <= 0:
             print("Warning: top_k should be positive, using default of 10")
@@ -273,21 +319,39 @@ class SemanticSearch:
         Returns:
             List of RetrievalResult objects
         """
-        # This is a simplified implementation of the exact match + semantic similarity approach
-        # In a real implementation, we would:
-        # 1. Identify exact matches for the selected text
-        # 2. Perform semantic similarity search
-        # 3. Combine results using weighted scoring (70% semantic similarity, 30% exact match)
+        # Generate embedding for the query text
+        try:
+            sanitized_query_text = self._sanitize_query_text(request.query.text)
+            query_embedding = self.embedder.embed_single_text(
+                text=sanitized_query_text,
+                model="embed-multilingual-v3.0",  # Use the correct model
+                input_type="search_query"
+            )
 
-        # For demonstration, we'll create mock results with adjusted scores
-        # based on the selected-text approach
-        results = self._create_mock_results(request)
+            # Validate the embedding dimensions
+            if not self.embedder.validate_embedding_dimensions(query_embedding):
+                self.logger.log_error(f"Invalid embedding dimensions for selected-text query: {sanitized_query_text}")
+                return []
 
-        # In a real implementation, we would apply the weighting here
-        # For now, we'll just return the results with a note that weighting would be applied
-        for result in results:
-            # This is where the 70% semantic similarity + 30% exact match weighting
-            # would be applied in a real implementation
-            pass
+            # Perform the actual search in Qdrant
+            search_results = self.client.search(
+                query_vector=query_embedding,
+                top_k=request.top_k
+            )
 
-        return results
+            # Convert Qdrant results to our data models
+            results = self._convert_qdrant_results(search_results)
+
+            # Apply selected-text specific logic (exact match + semantic similarity weighting)
+            # In a real implementation, we would combine exact matches with semantic similarity
+            # results using the configured weights (70% semantic, 30% exact)
+
+            # For now, we return the semantic similarity results with potential post-processing
+            # that would incorporate exact match considerations
+
+            return results
+
+        except Exception as e:
+            self.logger.log_error(f"Error during selected-text search: {e}")
+            # Return empty results in case of error
+            return []

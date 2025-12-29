@@ -117,3 +117,18 @@ class RetrievalLogger:
         """
         for chunk in chunks:
             self.log_chunk_for_accuracy(chunk)
+
+    def log_error(self, error_message: str) -> None:
+        """
+        Log an error message.
+
+        Args:
+            error_message: The error message to log
+        """
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "event_type": "error",
+            "data": {"error_message": error_message}
+        }
+        self._write_json_log(log_entry)
+        self.logger.error(error_message)

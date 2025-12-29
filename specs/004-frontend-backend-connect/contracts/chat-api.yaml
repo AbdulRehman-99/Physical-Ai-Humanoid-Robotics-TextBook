@@ -1,0 +1,164 @@
+# API Contract: Chat Endpoint
+
+**Feature**: Connect Frontend ↔ Backend with ChatKit
+**Created**: 2025-12-25
+**Status**: Draft
+**Author**: Claude
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.0
+info:
+  title: Book Chat API
+  description: API for connecting Docusaurus frontend with FastAPI RAG backend using ChatKit as frontend-only layer
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+
+paths:
+  /chat:
+    post:
+      summary: Process user chat message and return AI-generated response
+      description: Handles chat messages from ChatKit frontend, processes them through the RAG system, and returns book-grounded responses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Chat
+
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The user's question or message to the AI
+          example: "Explain the concept of inverse kinematics"
+        selected_text:
+          type: string
+          nullable: true
+          description: Optional text selected by user in the book content for context
+          example: "Inverse kinematics is the mathematical process of calculating the joint angles required to position the end effector of a robotic arm at a desired location."
+
+    ChatResponse:
+      type: object
+      required:
+        - response
+      properties:
+        response:
+          type: string
+          description: The AI-generated answer to the user's query
+          example: "Inverse kinematics is the mathematical process of calculating the joint angles required to position the end effector of a robotic arm at a desired location. It's commonly used in robotics for motion planning."
+        sources:
+          type: array
+          items:
+            type: string
+          description: References to book content that informed the response
+          example: ["Chapter 4: Robotic Motion Planning", "Section 4.2: Kinematics"]
+
+    ErrorResponse:
+      type: object
+      required:
+        - response
+      properties:
+        response:
+          type: string
+          description: Error message explaining the issue
+          example: "I can only answer questions about the book content. Please ask a question related to the book."
+        sources:
+          type: array
+          items:
+            type: string
+          description: Empty array for error responses
+          example: []
+
+tags:
+  - name: Chat
+    description: Chat functionality for book content interaction
+```
+
+## Endpoint Details
+
+### POST /chat
+
+**Purpose**: Process user chat messages and return AI-generated, book-grounded responses
+
+**Headers**:
+- Content-Type: application/json
+- Accept: application/json
+
+**Request Body**:
+```json
+{
+  "message": "string (required)",
+  "selected_text": "string | null (optional)"
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "response": "string",
+  "sources": ["string"]
+}
+```
+
+**Error Response (400/500)**:
+```json
+{
+  "response": "string",
+  "sources": []
+}
+```
+
+## Business Logic
+
+### Context Switching Rules
+1. If `selected_text` is provided and not null/empty, use it as the primary context and bypass Qdrant retrieval
+2. If `selected_text` is null or empty, perform Qdrant vector search with the user's message
+3. Always provide the determined context to the AI agent
+4. Ensure all responses are grounded in book content only
+
+### Guardrail Enforcement
+- Off-topic queries receive polite refusal messages
+- No HTTP errors for off-topic queries
+- All responses must reference book content
+- Error messages maintain professional tone
+
+## Performance Requirements
+- Response time: < 5 seconds for 95% of requests
+- Availability: 99% uptime during normal operation
+- Concurrency: Support multiple simultaneous requests
+
+## Security Considerations
+- Input validation on all request fields
+- Content filtering for inappropriate queries
+- Rate limiting to prevent abuse
+- No sensitive information in error messages

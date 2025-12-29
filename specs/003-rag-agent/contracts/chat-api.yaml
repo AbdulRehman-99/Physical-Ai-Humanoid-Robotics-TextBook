@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: RAG Agent Chat API
+  description: API for the RAG Agent that answers user questions from book content
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+paths:
+  /chat:
+    post:
+      summary: Send a message to the RAG agent
+      description: Send a user message to the RAG agent and receive a response based on book content or selected text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatPayload'
+      responses:
+        '200':
+          description: Successful response from the agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request due to invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - chat
+components:
+  schemas:
+    ChatPayload:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The user's message or question
+          example: "What is the main concept of this book?"
+        selected_text:
+          type: string
+          nullable: true
+          description: Optional selected text from the UI to use as context
+          example: "This is the selected text that should be used as context for the answer."
+    ChatResponse:
+      type: object
+      required:
+        - response
+      properties:
+        response:
+          type: string
+          description: The agent's response to the user's query
+          example: "The main concept of the book is..."
+        source_chunks:
+          type: array
+          items:
+            type: string
+          description: The source chunks used to generate the response (when applicable)
+          example: ["First chunk of relevant content...", "Second chunk of relevant content..."]
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Confidence score of the response
+          example: 0.85
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Selected text exceeds 10,000 character limit"
+tags:
+  - name: chat
+    description: Chat-related endpoints

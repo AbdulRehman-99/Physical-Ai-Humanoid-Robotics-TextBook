@@ -3,9 +3,24 @@ from typing import List, Dict, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import models
 from dotenv import load_dotenv
+import sys
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
+
+# Try to load environment variables from the project root directory
+# The .env file is located at the project root
+# Navigate up from this file: Backend/Retrieval/src/retrieval/client.py -> root
+env_path = Path(__file__).parent.parent.parent.parent.parent / ".env"
+
+# Load environment variables from the root directory if it exists
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    # Try to load from the standard location
+    load_dotenv()
+
 
 class QdrantRetrievalClient:
     """
@@ -15,13 +30,24 @@ class QdrantRetrievalClient:
     def __init__(self):
         self.host = os.getenv("QDRANT_HOST", "localhost")
         self.port = int(os.getenv("QDRANT_PORT", "6333"))
-        self.collection_name = os.getenv("QDRANT_COLLECTION_NAME", "book_content")
+        self.collection_name = os.getenv("QDRANT_COLLECTION_NAME", "book_embeddings")
+        self.url = os.getenv("QDRANT_URL", "")
+        self.api_key = os.getenv("QDRANT_API_KEY", "")
 
-        # Initialize Qdrant client
-        self.client = QdrantClient(
-            host=self.host,
-            port=self.port
-        )
+        # Initialize Qdrant client - use URL for cloud instances, host/port for local
+        if self.url and self.api_key:
+            # Use URL for Qdrant Cloud
+            self.client = QdrantClient(
+                url=self.url,
+                api_key=self.api_key,
+                https=True
+            )
+        else:
+            # Use host/port for local Qdrant
+            self.client = QdrantClient(
+                host=self.host,
+                port=self.port
+            )
 
     def search(
         self,
@@ -49,13 +75,17 @@ class QdrantRetrievalClient:
             if top_k > 100:  # Set a reasonable upper limit
                 raise ValueError("top_k cannot exceed 100")
 
-            results = self.client.search(
+            # Use the correct Qdrant client method for search
+            # For newer versions of qdrant-client, use query_points
+            search_results = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query=query_vector,
                 limit=top_k,
                 query_filter=query_filter
             )
-            return results
+
+            # Return the points from the search results
+            return search_results.points
         except ValueError as ve:
             # Handle validation errors
             print(f"Validation error during search: {ve}")

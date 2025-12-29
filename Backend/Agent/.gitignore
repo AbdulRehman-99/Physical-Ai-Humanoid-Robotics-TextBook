@@ -1,0 +1,4 @@
+__pycache__
+.venv
+rag_agent.log
+retrieval_logs.json

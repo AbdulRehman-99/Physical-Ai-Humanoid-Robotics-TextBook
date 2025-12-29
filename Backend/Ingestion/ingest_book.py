@@ -28,8 +28,8 @@ def parse_arguments():
     parser.add_argument(
         '--source-path',
         type=str,
-        default='Frontend/docs',
-        help='Path to the source markdown files (default: Frontend/docs)'
+        default=None,  # Changed to None to allow programmatic default
+        help='Path to the source markdown files (default: Frontend/docs relative to script location)'
     )
 
     parser.add_argument(
@@ -82,6 +82,14 @@ def main():
     setup_logging(level=args.log_level)
     logger = logging.getLogger(__name__)
 
+    # Set default source path relative to the script location if not provided
+    if args.source_path is None:
+        # Get the directory where this script is located, then go up to project root, then to Frontend/docs
+        script_dir = Path(__file__).parent
+        project_root = script_dir.parent  # Go up from Backend/Ingestion to Backend, then we need to go up again
+        project_root = project_root.parent  # Now we're at the project root
+        args.source_path = project_root / "Frontend" / "docs"
+
     logger.info("Starting book ingestion pipeline...")
     logger.info(f"Source path: {args.source_path}")
     logger.info(f"Target collection: {args.target_collection or settings.qdrant_collection_name}")
@@ -104,7 +112,7 @@ def main():
         logger.info("Initializing vectorizer...")
         vectorizer = Vectorizer()
 
-        # Process documents
+        # Process documents and collect chunks
         logger.info("Starting document processing...")
         processing_results = processor.process_documents(args.source_path)
 
@@ -120,8 +128,8 @@ def main():
         if successful_docs > 0:
             logger.info("Starting embedding generation and storage...")
 
-            # We need to process the documents again to get the actual chunks
-            # This is inefficient but necessary since process_documents doesn't return the chunks
+            # Process documents again to get the actual chunks for embedding
+            # In a more optimized version, we could modify process_documents to return chunks directly
             markdown_files = processor.scan_documents(args.source_path)
             all_chunks = []
 
