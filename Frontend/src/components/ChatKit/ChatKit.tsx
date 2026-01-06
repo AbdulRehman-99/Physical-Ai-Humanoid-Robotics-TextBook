@@ -52,7 +52,7 @@ const ChatKit: React.FC = () => {
       const selectedText = window.getSelection?.()?.toString() || '';
 
       // Call backend API
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch('http://localhost:8002/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ const ChatKit: React.FC = () => {
                         <summary>Sources</summary>
                         {message.sources.map((source, index) => (
                           <div key={index} className="chatkit-source">
-                            {source.text.substring(0, 100)}...
+                              {source.text ? source.text.substring(0, 100) : 'No content available'}...
                           </div>
                         ))}
                       </details>

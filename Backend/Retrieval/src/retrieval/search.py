@@ -134,7 +134,23 @@ class SemanticSearch:
         results = []
         for idx, result in enumerate(qdrant_results):
             # Extract text content and metadata from the result
-            text_content = result.payload.get('content', '') if hasattr(result, 'payload') and result.payload else ''
+            # The content might be stored directly in the result or in the payload
+            text_content = ''
+
+            # Try multiple locations for content
+            if hasattr(result, 'payload') and result.payload:
+                # Check if content is directly in the payload
+                text_content = result.payload.get('content', '')
+
+                # If still empty, check if it's in a nested content field or other common fields
+                if not text_content:
+                    text_content = result.payload.get('text', '')
+                if not text_content:
+                    text_content = result.payload.get('original_content', '')
+
+            # If content is still empty and result has a direct content field, use that
+            if not text_content and hasattr(result, 'content'):
+                text_content = result.content or ''
 
             # Extract metadata from payload
             metadata = result.payload if hasattr(result, 'payload') and result.payload else {}

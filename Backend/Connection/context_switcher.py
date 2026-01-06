@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, List
-from .models import ChatContext
+from .models import ChatContext, RetrievedChunk
 import sys
 import os
 from pathlib import Path
@@ -36,27 +36,47 @@ class ContextSwitcher:
                     # Convert search results to the expected format for retrieved_chunks
                     retrieved_chunks = []
                     context_parts = []
+                    logger.info(f"Raw search results structure: {type(search_results)}, count: {len(search_results) if isinstance(search_results, list) else 'N/A'}")
+                    if search_results and len(search_results) > 0:
+                        logger.info(f"First result keys: {list(search_results[0].keys()) if isinstance(search_results[0], dict) else 'Not a dict'}")
+
                     for result in search_results:
-                        chunk_text = result.get('content', '')
+                        # Check the actual structure of the result
+                        # The result from the retrieval service should have 'content', 'score', 'metadata' as top-level keys
+                        if isinstance(result, dict):
+                            # The content should be directly accessible as 'content' field
+                            chunk_text = result.get('content', '')
+
+                            # If the content is still empty, try to get it from payload (backup approach)
+                            if not chunk_text.strip():
+                                chunk_text = result.get('payload', {}).get('content', '') or result.get('payload', {}).get('text', '')
+
+                            # Also try other possible locations
+                            if not chunk_text.strip():
+                                chunk_text = result.get('text', '')
+
+                            # Get the metadata and score
+                            metadata = result.get('metadata', result.get('payload', {}))
+                            score = result.get('score', 0.0)
+                        else:
+                            # If it's not a dict, try to handle it differently
+                            chunk_text = str(result) if hasattr(result, '__str__') else ''
+                            metadata = {}
+                            score = 0.0
+
                         if chunk_text and chunk_text.strip():
-                            # Extract metadata fields expected by response_formatter
-                            result_metadata = result.get('metadata', {})
-                            formatted_metadata = {
-                                "module": result_metadata.get('module', 'N/A'),
-                                "chapter": result_metadata.get('chapter', 'N/A'),
-                                "section": result_metadata.get('section', 'N/A'),
-                                "version": result_metadata.get('version', 'N/A'),
-                                "score": result.get('score', 0.0),  # similarity score
-                                "original_metadata": result_metadata  # keep original for reference
-                            }
-                            retrieved_chunks.append({
-                                "text": chunk_text,
-                                "metadata": formatted_metadata
-                            })
+                            # For ChatContext model, retrieved_chunks should be a list of RetrievedChunk objects
+                            chunk_obj = RetrievedChunk(content=chunk_text, metadata=metadata, score=score)
+                            retrieved_chunks.append(chunk_obj)
                             context_parts.append(chunk_text)
+                        else:
+                            logger.warning(f"Found result without content: {result}")
 
                     # Combine all chunk texts for effective_context
                     effective_context = " ".join(context_parts)
+                    logger.info(f"Retrieved {len(retrieved_chunks)} chunks with total content length: {len(effective_context)} chars")
+                    if retrieved_chunks:
+                        logger.info(f"First retrieved chunk preview: {retrieved_chunks[0].content[:200]}...")
                 else:
                     # If no relevant chunks found in Qdrant, return appropriate response indicating no relevant content found
                     retrieved_chunks = None
@@ -90,27 +110,47 @@ class ContextSwitcher:
                     # Convert search results to the expected format for retrieved_chunks
                     retrieved_chunks = []
                     context_parts = []
+                    logger.info(f"Raw search results structure: {type(search_results)}, count: {len(search_results) if isinstance(search_results, list) else 'N/A'}")
+                    if search_results and len(search_results) > 0:
+                        logger.info(f"First result keys: {list(search_results[0].keys()) if isinstance(search_results[0], dict) else 'Not a dict'}")
+
                     for result in search_results:
-                        chunk_text = result.get('content', '')
+                        # Check the actual structure of the result
+                        # The result from the retrieval service should have 'content', 'score', 'metadata' as top-level keys
+                        if isinstance(result, dict):
+                            # The content should be directly accessible as 'content' field
+                            chunk_text = result.get('content', '')
+
+                            # If the content is still empty, try to get it from payload (backup approach)
+                            if not chunk_text.strip():
+                                chunk_text = result.get('payload', {}).get('content', '') or result.get('payload', {}).get('text', '')
+
+                            # Also try other possible locations
+                            if not chunk_text.strip():
+                                chunk_text = result.get('text', '')
+
+                            # Get the metadata and score
+                            metadata = result.get('metadata', result.get('payload', {}))
+                            score = result.get('score', 0.0)
+                        else:
+                            # If it's not a dict, try to handle it differently
+                            chunk_text = str(result) if hasattr(result, '__str__') else ''
+                            metadata = {}
+                            score = 0.0
+
                         if chunk_text and chunk_text.strip():
-                            # Extract metadata fields expected by response_formatter
-                            result_metadata = result.get('metadata', {})
-                            formatted_metadata = {
-                                "module": result_metadata.get('module', 'N/A'),
-                                "chapter": result_metadata.get('chapter', 'N/A'),
-                                "section": result_metadata.get('section', 'N/A'),
-                                "version": result_metadata.get('version', 'N/A'),
-                                "score": result.get('score', 0.0),  # similarity score
-                                "original_metadata": result_metadata  # keep original for reference
-                            }
-                            retrieved_chunks.append({
-                                "text": chunk_text,
-                                "metadata": formatted_metadata
-                            })
+                            # For ChatContext model, retrieved_chunks should be a list of RetrievedChunk objects
+                            chunk_obj = RetrievedChunk(content=chunk_text, metadata=metadata, score=score)
+                            retrieved_chunks.append(chunk_obj)
                             context_parts.append(chunk_text)
+                        else:
+                            logger.warning(f"Found result without content: {result}")
 
                     # Combine all chunk texts for effective_context
                     effective_context = " ".join(context_parts)
+                    logger.info(f"Retrieved {len(retrieved_chunks)} chunks with total content length: {len(effective_context)} chars")
+                    if retrieved_chunks:
+                        logger.info(f"First retrieved chunk preview: {retrieved_chunks[0].content[:200]}...")
                 else:
                     # If no relevant chunks found in Qdrant, return appropriate response indicating no relevant content found
                     retrieved_chunks = None

@@ -4,27 +4,834 @@
  * work well for content-centric websites.
  */
 
-/* You can override the default Infima variables here. */
+/* Modern color palette for Physical AI & Humanoid Robotics book */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* Primary colors - modern tech blue */
+  --ifm-color-primary: #2563eb;
+  --ifm-color-primary-dark: #1d4ed8;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #3b82f6;
+  --ifm-color-primary-lighter: #60a5fa;
+  --ifm-color-primary-lightest: #93c5fd;
+
+  /* Secondary colors */
+  --ifm-color-secondary: #64748b;
+  --ifm-color-secondary-dark: #475569;
+  --ifm-color-secondary-darker: #334155;
+  --ifm-color-secondary-darkest: #1e293b;
+  --ifm-color-secondary-light: #94a3b8;
+  --ifm-color-secondary-lighter: #cbd5e1;
+  --ifm-color-secondary-lightest: #e2e8f0;
+
+  /* Accent colors */
+  --ifm-color-accent: #0ea5e9; /* Sky blue */
+  --ifm-color-success: #10b981;
+  --ifm-color-info: #3b82f6;
+  --ifm-color-warning: #f59e0b;
+  --ifm-color-danger: #ef4444;
+
+  /* Typography */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --ifm-line-height-base: 1.6;
+  --ifm-heading-font-weight: 700;
+  --ifm-h1-font-size: 2.5rem;
+  --ifm-h2-font-size: 2rem;
+  --ifm-h3-font-size: 1.5rem;
+  --ifm-h4-font-size: 1.25rem;
+
+  /* Spacing and layout */
+  --ifm-spacing-horizontal: 1.5rem;
+  --ifm-navbar-padding-horizontal: 1.5rem;
+  --ifm-navbar-height: 4.5rem;
+  --ifm-footer-padding-vertical: 3rem;
+  --ifm-footer-padding-horizontal: 2rem;
+
+  /* Code styling */
+  --ifm-code-font-size: 90%;
+  --ifm-code-border-radius: 6px;
+  --ifm-code-background: rgba(245, 245, 245, 0.5);
+  --ifm-code-color: #2d3748;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+
+  /* Cards and containers */
+  --ifm-card-background-color: #ffffff;
+  --ifm-card-border-radius: 12px;
+  --ifm-card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+
+  /* Navbar */
+  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+
+  /* Sidebar */
+  --ifm-menu-color-background-active: rgba(37, 99, 235, 0.1);
+  --ifm-menu-color-background-hover: rgba(37, 99, 235, 0.05);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* Dark mode improvements */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  /* Primary colors - adjusted for dark mode */
+  --ifm-color-primary: #3b82f6;
+  --ifm-color-primary-dark: #2563eb;
+  --ifm-color-primary-darker: #1d4ed8;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #60a5fa;
+  --ifm-color-primary-lighter: #93c5fd;
+  --ifm-color-primary-lightest: #bfdbfe;
+
+  /* Secondary colors - adjusted for dark mode */
+  --ifm-color-secondary: #94a3b8;
+  --ifm-color-secondary-dark: #64748b;
+  --ifm-color-secondary-darker: #475569;
+  --ifm-color-secondary-darkest: #334155;
+  --ifm-color-secondary-light: #cbd5e1;
+  --ifm-color-secondary-lighter: #e2e8f0;
+  --ifm-color-secondary-lightest: #f1f5f9;
+
+  /* Backgrounds */
+  --ifm-background-color: #0f172a;
+  --ifm-background-surface-color: #1e293b;
+  --ifm-navbar-background-color: #0f172a;
+  --ifm-footer-background-color: #0f172a;
+  --ifm-card-background-color: #1e293b;
+
+  /* Text colors */
+  --ifm-color-emphasis-0: #f8fafc;
+  --ifm-color-emphasis-100: #f1f5f9;
+  --ifm-color-emphasis-200: #e2e8f0;
+  --ifm-color-emphasis-300: #cbd5e1;
+  --ifm-color-emphasis-400: #94a3b8;
+  --ifm-color-emphasis-500: #64748b;
+  --ifm-color-emphasis-600: #475569;
+  --ifm-color-emphasis-700: #334155;
+  --ifm-color-emphasis-800: #1e293b;
+  --ifm-color-emphasis-900: #0f172a;
+
+  /* Code styling */
+  --ifm-code-background: rgba(30, 41, 59, 0.7);
+  --ifm-code-color: #e2e8f0;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+
+  /* Shadows */
+  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --ifm-card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced typography and spacing */
+.docusaurus-highlight-code-line {
+  background-color: var(--docusaurus-highlighted-code-line-bg);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+/* Modern card styling */
+.card {
+  border: none;
+  box-shadow: var(--ifm-card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Improved code blocks */
+.code-block {
+  margin-bottom: 1rem;
+}
+
+.prism-code {
+  border-radius: var(--ifm-code-border-radius);
+  font-size: var(--ifm-code-font-size);
+}
+
+/* Enhanced admonitions */
+.alert {
+  border-radius: 8px;
+  border-left-width: 4px;
+}
+
+.alert--primary {
+  border-left-color: var(--ifm-color-primary);
+}
+
+.alert--secondary {
+  border-left-color: var(--ifm-color-secondary);
+}
+
+.alert--success {
+  border-left-color: var(--ifm-color-success);
+}
+
+.alert--info {
+  border-left-color: var(--ifm-color-info);
+}
+
+.alert--warning {
+  border-left-color: var(--ifm-color-warning);
+}
+
+.alert--danger {
+  border-left-color: var(--ifm-color-danger);
+}
+
+/* Modern button styling */
+.button {
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved table styling */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.markdown table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.markdown th, .markdown td {
+  padding: 0.75rem 1rem;
+  border-color: var(--ifm-table-border-color);
+}
+
+/* Enhanced sidebar */
+.menu {
+  padding: 1rem 0;
+}
+
+.menu__list {
+  margin: 0;
+}
+
+.menu__list-item {
+  margin-bottom: 0.25rem;
+}
+
+.menu__list-item a {
+  border-radius: 6px;
+  margin: 0.25rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.menu__list-item a:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+}
+
+.menu__list-item--active > a,
+.menu__list-item a:hover {
+  background-color: var(--ifm-menu-color-background-active);
+  color: var(--ifm-color-primary);
+}
+
+/* Modern navbar */
+.navbar {
+  height: var(--ifm-navbar-height);
+  align-items: center;
+}
+
+.navbar__inner {
+  max-width: 100%;
+}
+
+.navbar__items {
+  gap: 0.5rem;
+}
+
+.navbar__item, .navbar__link {
+  font-weight: 500;
+}
+
+/* Enhanced footer */
+.footer {
+  padding-top: var(--ifm-footer-padding-vertical);
+  padding-bottom: var(--ifm-footer-padding-vertical);
+  padding-left: var(--ifm-footer-padding-horizontal);
+  padding-right: var(--ifm-footer-padding-horizontal);
+}
+
+.footer__title {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.footer__link-item {
+  line-height: 1.6;
+}
+
+/* Search improvements */
+.navbar__search {
+  padding-left: 1rem;
+}
+
+/* Improved doc layout */
+.docItemContainer {
+  padding: 0 1rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 996px) {
+  .docItemContainer {
+    padding: 0 0.5rem;
+  }
+
+  .navbar {
+    height: auto;
+    min-height: 4.5rem;
+  }
+
+  .navbar__items {
+    gap: 0.25rem;
+  }
+
+  /* Mobile navbar adjustments */
+  .navbar__item {
+    margin: 0 0.125rem;
+    padding: 0.5rem 0.5rem;
+  }
+
+  /* Mobile sidebar adjustments */
+  .sidebar {
+    width: 280px;
+  }
+
+  /* Mobile content adjustments */
+  .main-wrapper {
+    padding: 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
+  /* Mobile typography adjustments */
+  .markdown h1 {
+    font-size: 1.75rem;
+  }
+
+  .markdown h2 {
+    font-size: 1.5rem;
+  }
+
+  .markdown h3 {
+    font-size: 1.25rem;
+  }
+
+  /* Mobile code block adjustments */
+  .code-block {
+    font-size: 0.8rem;
+  }
+
+  /* Mobile table adjustments */
+  .markdown table {
+    font-size: 0.8rem;
+  }
+
+  /* Mobile footer adjustments */
+  .footerTop {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .footerBrand {
+    min-width: 100%;
+  }
+
+  .footerLinks {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .footerLinkColumn {
+    min-width: 100%;
+  }
+
+  .footerBottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .footerBottomRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Tablet responsiveness */
+@media (min-width: 768px) and (max-width: 996px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1200px;
+  }
+
+  .docItemContainer {
+    max-width: 900px;
+  }
+}
+
+/* Extra large screen optimizations */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1400px;
+  }
+
+  .docItemContainer {
+    max-width: 1000px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .navbar,
+  .sidebar,
+  .footer {
+    display: none;
+  }
+
+  .main-wrapper {
+    padding: 0;
+  }
+
+  .docItemContainer {
+    padding: 0;
+  }
+
+  .markdown a {
+    color: var(--ifm-color-primary);
+    text-decoration: underline;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus,
+summary:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+/* Enhanced focus styles for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+/* Remove focus styles for mouse users (based on preference) */
+@media (prefers-reduced-motion: no-preference) {
+  :focus {
+    scroll-margin-top: calc(var(--ifm-navbar-height) + 1rem);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --ifm-color-primary: #0066cc;
+    --ifm-color-primary-dark: #004c99;
+    --ifm-color-primary-darker: #003366;
+    --ifm-color-primary-darkest: #001933;
+    --ifm-color-primary-light: #3399ff;
+    --ifm-color-primary-lighter: #66ccff;
+    --ifm-color-primary-lightest: #99e6ff;
+  }
+
+  [data-theme='dark'] {
+    --ifm-color-primary: #3399ff;
+    --ifm-color-primary-dark: #0066cc;
+    --ifm-color-primary-darker: #004c99;
+    --ifm-color-primary-darkest: #003366;
+    --ifm-color-primary-light: #66ccff;
+    --ifm-color-primary-lighter: #99e6ff;
+    --ifm-color-primary-lightest: #cceeff;
+  }
+
+  .navbar__item,
+  .menu__list-item a,
+  .menu__list-item span,
+  .footerLinkItem a {
+    border: 1px solid transparent;
+  }
+
+  .navbar__item:hover,
+  .menu__list-item a:hover,
+  .menu__list-item span:hover,
+  .footerLinkItem a:hover {
+    border-color: var(--ifm-color-primary);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .button:hover {
+    transform: none;
+  }
+
+  .navbar {
+    transition: none;
+  }
+
+  .sidebar {
+    transition: none;
+  }
+}
+
+/* Screen reader only content */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--ifm-color-primary);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.3s ease;
+}
+
+.skip-to-content:focus {
+  top: 6px;
+}
+
+/* Better color contrast for text */
+.markdown {
+  color: var(--ifm-font-color-base);
+}
+
+/* Accessible table styling */
+.markdown table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.markdown th {
+  background-color: var(--ifm-color-emphasis-100);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .markdown th {
+  background-color: var(--ifm-color-emphasis-800);
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  padding: 0.75rem 1rem;
+}
+
+[data-theme='dark'] .markdown th,
+[data-theme='dark'] .markdown td {
+  border-color: var(--ifm-color-emphasis-700);
+}
+
+/* Accessible link styling */
+.markdown a {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.markdown a:hover {
+  text-decoration-thickness: 3px;
+}
+
+/* Better heading hierarchy */
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  position: relative;
+}
+
+/* Accessible icon buttons */
+.icon-button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--ifm-transition-fast) ease;
+}
+
+.icon-button:hover,
+.icon-button:focus {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+[data-theme='dark'] .icon-button:hover,
+[data-theme='dark'] .icon-button:focus {
+  background-color: var(--ifm-color-emphasis-700);
+}
+
+/* Accessible code blocks */
+.prism-code {
+  tab-size: 4;
+}
+
+/* Better contrast for disabled elements */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Accessible form elements */
+.form-control {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color var(--ifm-transition-fast) ease;
+}
+
+.form-control:focus {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+/* Accessible alert styling */
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.alert--primary {
+  background-color: rgba(37, 99, 235, 0.1);
+  border-left-color: var(--ifm-color-primary);
+}
+
+.alert--secondary {
+  background-color: rgba(100, 116, 139, 0.1);
+  border-left-color: var(--ifm-color-secondary);
+}
+
+.alert--success {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-left-color: var(--ifm-color-success);
+}
+
+.alert--info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left-color: var(--ifm-color-info);
+}
+
+.alert--warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--ifm-color-warning);
+}
+
+.alert--danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left-color: var(--ifm-color-danger);
+}
+
+/* Accessible image styling */
+.markdown img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better list styling for accessibility */
+.markdown ol,
+.markdown ul {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.markdown li {
+  margin-bottom: 0.5rem;
+}
+
+.markdown li:last-child {
+  margin-bottom: 0;
+}
+
+/* Accessible navigation landmarks */
+[role="banner"] {
+  display: block;
+}
+
+[role="main"] {
+  display: block;
+}
+
+[role="contentinfo"] {
+  display: block;
+}
+
+[role="navigation"] {
+  display: block;
+}
+
+/* Better accessibility for interactive elements */
+details summary {
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: "▶ ";
+  display: inline-block;
+  transition: transform var(--ifm-transition-fast) ease;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+/* Focus management for modals and overlays */
+.overflow-hidden {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ifm-color-emphasis-200);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-400);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ifm-color-emphasis-500);
+}
+
+/* Improved code copy button */
+.theme-code-block {
+  border-radius: var(--ifm-code-border-radius);
+}
+
+/* Better inline code styling */
+.markdown :not(pre) > code {
+  background-color: var(--ifm-code-background);
+  color: var(--ifm-code-color);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: var(--ifm-code-font-size);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced image styling */
+.markdown img {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 1rem 0;
+}
+
+/* Improved horizontal rules */
+hr {
+  border: none;
+  height: 1px;
+  background: var(--ifm-color-emphasis-300);
+  margin: 2rem 0;
+}
+
+/* Better link styling */
+.markdown a {
+  text-decoration: none;
+  position: relative;
+}
+
+.markdown a:hover {
+  text-decoration: underline;
+}
+
+/* Custom badge styling */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 12px;
+  background-color: var(--ifm-color-primary);
+  color: white;
 }

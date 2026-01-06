@@ -84,6 +84,7 @@ class Vectorizer:
                     'id': point_id,
                     'vector': embedding.embedding,
                     'payload': {
+                        'content': embedding.text_content,  # Store the actual text content
                         **embedding.metadata,
                         'original_chunk_id': embedding.chunk_id  # Keep original ID in metadata
                     }

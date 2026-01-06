@@ -87,37 +87,45 @@ class AgentWrapper:
             if context.selected_text:
                 # If selected text is provided, use it as context
                 prompt = f"""
-                Based on the following selected text from the book, please answer the question:
+                You are an AI assistant that must answer questions based ONLY on the provided book content.
+                You have been given specific text from the book. Use ONLY this information to answer the question.
+                Do not use any external knowledge or general information.
 
-                Selected text: {context.selected_text}
+                Here is the book content you must use:
+                {context.selected_text}
 
-                Question: {context.user_message}
+                Now answer this question using ONLY the above content:
+                {context.user_message}
 
-                Please provide an answer based on the selected text and cite the relevant information.
+                If the provided content does not contain the answer, explicitly state that the information is not in the provided content.
                 """
             elif context.retrieved_chunks:
                 # If retrieved chunks are available, use them as context
-                chunk_texts = [chunk["text"] for chunk in context.retrieved_chunks if "text" in chunk]
+                # retrieved_chunks is now a list of RetrievedChunk objects
+                chunk_texts = [chunk.content for chunk in context.retrieved_chunks]
                 combined_context = " ".join(chunk_texts)
 
                 prompt = f"""
-                Based on the following book content, please answer the question:
+                You are an AI assistant that must answer questions based ONLY on the provided book content.
+                You have been given specific text from the book. Use ONLY this information to answer the question.
+                Do not use any external knowledge or general information.
 
-                Book content: {combined_context[:2000]}  # Limit context to avoid exceeding token limits
+                Here is the book content you must use:
+                {combined_context[:2000]}  # Limit context to avoid exceeding token limits
 
-                Question: {context.user_message}
+                Now answer this question using ONLY the above content:
+                {context.user_message}
 
-                Please provide an answer based on the book content and cite the relevant information.
+                If the provided content does not contain the answer, explicitly state that the information is not in the provided content.
                 """
             else:
                 # If no context is available, ask the question directly but guide to focus on book content
                 prompt = f"""
-                Please answer the following question about the book content:
-
+                You are an AI assistant that can only answer questions about book content.
+                Do not use any external knowledge.
                 Question: {context.user_message}
 
-                If you don't have specific information about this topic in your knowledge base,
-                please indicate that you couldn't find relevant content in the book.
+                Since no specific content was provided, explicitly state that you couldn't find relevant content in the book.
                 """
 
             # Call the Gemini API asynchronously
@@ -128,8 +136,11 @@ class AgentWrapper:
 
             # Extract the text from the response
             if response and hasattr(response, 'text') and response.text:
-                return response.text.strip()
+                result_text = response.text.strip()
+                logger.info(f"Gemini API returned: {result_text[:200]}...")  # Log first 200 chars for debugging
+                return result_text
             else:
+                logger.warning(f"Gemini API returned empty or invalid response: {response}")
                 return f"I couldn't find relevant content in the book for your query: {context.user_message}. Please try rephrasing your question."
 
         except Exception as e:

@@ -16,10 +16,16 @@ class ResponseFormatter:
         sources = []
         if context.retrieved_chunks:
             for chunk in context.retrieved_chunks:
-                if "metadata" in chunk:
-                    metadata = chunk["metadata"]
-                    source = f"Module: {metadata.get('module', 'N/A')}, Chapter: {metadata.get('chapter', 'N/A')}, Section: {metadata.get('section', 'N/A')}"
+                # chunk is now a RetrievedChunk object with metadata
+                metadata = chunk.metadata
+                if metadata:
+                    module = metadata.get('module', 'N/A')
+                    chapter = metadata.get('chapter', 'N/A')
+                    section = metadata.get('section', 'N/A')
+                    source = f"Module: {module}, Chapter: {chapter}, Section: {section}"
                     sources.append(source)
+                else:
+                    sources.append("Book content retrieved")
 
         return ChatResponse(
             response=agent_response,
