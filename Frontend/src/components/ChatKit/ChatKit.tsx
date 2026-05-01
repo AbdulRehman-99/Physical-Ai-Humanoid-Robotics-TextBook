@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import './ChatKit.css';
 
 interface Message {
@@ -10,6 +11,9 @@ interface Message {
 }
 
 const ChatKit: React.FC = () => {
+  const { siteConfig } = useDocusaurusContext();
+  const backendUrl = (siteConfig.customFields?.backendUrl as string) || 'https://abdul-rehman-99-textbook.hf.space';
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -52,7 +56,7 @@ const ChatKit: React.FC = () => {
       const selectedText = window.getSelection?.()?.toString() || '';
 
       // Call backend API
-      const response = await fetch('https://abdul-rehman-99-textbook.hf.space/chat', {
+      const response = await fetch(`${backendUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
