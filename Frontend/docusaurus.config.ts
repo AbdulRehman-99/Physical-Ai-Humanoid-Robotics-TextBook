@@ -7,11 +7,11 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Physical AI & Humanoid Robotics',
   tagline: 'A Technical Book on Physical AI & Humanoid Robotics',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon-humanoid.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
-    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    v4: false, // Disable experimental v4 features for stability
   },
 
   // Set the production url of your site here
@@ -57,14 +57,18 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
+    metadata: [
+      {name: 'keywords', content: 'physical ai, humanoid robotics, robotics, ai, textbook'},
+      {name: 'theme-color', content: '#2563eb'},
+    ],
     colorMode: {
       respectPrefersColorScheme: true,
     },
     navbar: {
       title: 'Physical AI & Humanoid Robotics',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'Standing Humanoid Robot - Physical AI & Humanoid Robotics',
+        src: 'img/standing-humanoid-logo.svg',
       },
       items: [
         {
@@ -72,11 +76,6 @@ const config: Config = {
           sidebarId: 'bookSidebar',
           position: 'left',
           label: 'Book',
-        },
-        {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
         },
       ],
     },

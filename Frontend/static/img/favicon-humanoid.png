@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="headGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="legGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <!-- Simplified standing humanoid robot for favicon -->
+
+    <!-- Head -->
+    <circle cx="16" cy="10" r="4" fill="url(#headGradient)"/>
+
+    <!-- Eyes -->
+    <circle cx="14.5" cy="9.5" r="0.5" fill="white"/>
+    <circle cx="17.5" cy="9.5" r="0.5" fill="white"/>
+
+    <!-- Neck -->
+    <rect x="15" y="14" width="2" height="1" fill="url(#bodyGradient)"/>
+
+    <!-- Torso -->
+    <rect x="13" y="15" width="6" height="7" rx="1" fill="url(#bodyGradient)"/>
+
+    <!-- Arms -->
+    <line x1="13" y1="16" x2="10" y2="17" stroke="url(#bodyGradient)" stroke-width="1"/>
+    <line x1="19" y1="16" x2="22" y2="17" stroke="url(#headGradient)" stroke-width="1"/>
+
+    <!-- Legs -->
+    <line x1="14" y1="22" x2="14" y2="25" stroke="url(#legGradient)" stroke-width="1.5"/>
+    <line x1="18" y1="22" x2="18" y2="25" stroke="url(#headGradient)" stroke-width="1.5"/>
+
+    <!-- Antenna -->
+    <line x1="16" y1="6" x2="16" y2="4" stroke="url(#accentGradient)" stroke-width="0.5"/>
+    <circle cx="16" cy="3.5" r="0.5" fill="url(#accentGradient)"/>
+  </g>
+</svg>

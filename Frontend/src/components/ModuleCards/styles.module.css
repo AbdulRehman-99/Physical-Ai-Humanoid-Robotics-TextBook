@@ -1,0 +1,178 @@
+.modulesSection {
+  padding: 4rem 0;
+  background: linear-gradient(135deg,
+    var(--ifm-color-emphasis-100) 0%,
+    var(--ifm-color-emphasis-50) 100%);
+}
+
+.sectionTitle {
+  font-size: 2.25rem;
+  margin-bottom: 2.5rem;
+  color: var(--ifm-color-primary);
+  text-align: center;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .sectionTitle {
+  color: var(--ifm-color-primary-lighter);
+}
+
+[data-theme='dark'] .modulesSection {
+  background: linear-gradient(135deg,
+    var(--ifm-background-surface-color) 0%,
+    var(--ifm-background-color) 100%);
+}
+
+.moduleCardCol {
+  padding: 0.75rem;
+}
+
+.moduleCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+  background: var(--ifm-card-background-color);
+  border-radius: var(--ifm-card-border-radius);
+  box-shadow: var(--ifm-card-shadow);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.moduleCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.moduleCard:hover::before {
+  opacity: 1;
+}
+
+.moduleCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.15);
+}
+
+.moduleCardHeader {
+  margin-bottom: 1rem;
+}
+
+.moduleCardTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ifm-heading-color);
+  line-height: 1.4;
+}
+
+.moduleCardContent {
+  flex: 1;
+  margin-bottom: 1.5rem;
+}
+
+.moduleCardDescription {
+  color: var(--ifm-color-emphasis-700);
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+[data-theme='dark'] .moduleCardDescription {
+  color: var(--ifm-color-emphasis-400);
+}
+
+.moduleCardFooter {
+  margin-top: auto;
+}
+
+.moduleCardLink {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.moduleCard:hover .moduleCardLink {
+  color: var(--ifm-color-primary-dark);
+  transform: translateX(3px);
+}
+
+/* Responsive design */
+@media (max-width: 996px) {
+  .modulesSection {
+    padding: 3rem 0;
+  }
+
+  .moduleCardCol {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .moduleCard {
+    padding: 1.25rem;
+  }
+
+  .moduleCardTitle {
+    font-size: 1.1rem;
+  }
+
+  .moduleCardDescription {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .moduleCardCol {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 576px) {
+  .moduleCardCol {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .modulesSection {
+    padding: 2rem 0;
+  }
+
+  .moduleCard {
+    padding: 1rem;
+  }
+}
+
+/* Accessibility improvements */
+.moduleCard:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--ifm-card-border-radius);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .moduleCard {
+    transition: none;
+  }
+
+  .moduleCard:hover {
+    transform: none;
+  }
+
+  .moduleCardLink {
+    transition: none;
+  }
+}

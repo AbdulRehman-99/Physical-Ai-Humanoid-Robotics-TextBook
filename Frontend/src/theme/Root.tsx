@@ -1,4 +1,4 @@
-import React, {type ReactNode} from 'react';
+import React, { type ReactNode } from 'react';
 import ChatKit from '../components/ChatKit';
 
 // Root component that wraps the entire app

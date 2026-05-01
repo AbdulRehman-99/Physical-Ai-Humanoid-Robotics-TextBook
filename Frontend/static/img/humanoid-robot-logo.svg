@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="headGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <!-- Humanoid robot head -->
+    <ellipse cx="100" cy="60" rx="25" ry="20" fill="url(#headGradient)"/>
+
+    <!-- Eyes -->
+    <circle cx="90" cy="58" r="4" fill="white"/>
+    <circle cx="110" cy="58" r="4" fill="white"/>
+    <circle cx="90" cy="58" r="2" fill="#000"/>
+    <circle cx="110" cy="58" r="2" fill="#000"/>
+
+    <!-- Antenna -->
+    <line x1="100" y1="40" x2="100" y2="30" stroke="url(#accentGradient)" stroke-width="3"/>
+    <circle cx="100" cy="27" r="4" fill="url(#accentGradient)"/>
+
+    <!-- Neck -->
+    <rect x="95" y="80" width="10" height="10" fill="url(#bodyGradient)"/>
+
+    <!-- Torso -->
+    <rect x="80" y="90" width="40" height="45" rx="8" fill="url(#bodyGradient)"/>
+
+    <!-- Chest panel -->
+    <rect x="90" y="100" width="20" height="15" rx="4" fill="url(#headGradient)" opacity="0.6"/>
+
+    <!-- Arms -->
+    <line x1="75" y1="100" x2="60" y2="100" stroke="url(#bodyGradient)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="125" y1="100" x2="140" y2="100" stroke="url(#headGradient)" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- Legs -->
+    <line x1="90" y1="135" x2="90" y2="165" stroke="url(#bodyGradient)" stroke-width="10" stroke-linecap="round"/>
+    <line x1="110" y1="135" x2="110" y2="165" stroke="url(#headGradient)" stroke-width="10" stroke-linecap="round"/>
+
+    <!-- Feet -->
+    <ellipse cx="90" cy="170" rx="6" ry="3" fill="url(#bodyGradient)"/>
+    <ellipse cx="110" cy="170" rx="6" ry="3" fill="url(#headGradient)"/>
+
+    <!-- Detail elements -->
+    <circle cx="100" cy="110" r="3" fill="url(#accentGradient)"/>
+    <circle cx="95" cy="120" r="2" fill="url(#accentGradient)"/>
+    <circle cx="105" cy="120" r="2" fill="url(#accentGradient)"/>
+  </g>
+</svg>

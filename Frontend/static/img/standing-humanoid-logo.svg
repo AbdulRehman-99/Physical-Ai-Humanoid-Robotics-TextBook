@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="headGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="legGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <!-- Standing humanoid robot -->
+
+    <!-- Head -->
+    <circle cx="100" cy="50" r="18" fill="url(#headGradient)"/>
+
+    <!-- Eyes -->
+    <circle cx="92" cy="47" r="3" fill="white"/>
+    <circle cx="108" cy="47" r="3" fill="white"/>
+    <circle cx="92" cy="47" r="1.5" fill="#000"/>
+    <circle cx="108" cy="47" r="1.5" fill="#000"/>
+
+    <!-- Antenna -->
+    <line x1="100" y1="32" x2="100" y2="25" stroke="url(#accentGradient)" stroke-width="2.5"/>
+    <circle cx="100" cy="23" r="3" fill="url(#accentGradient)"/>
+
+    <!-- Neck -->
+    <rect x="97" y="68" width="6" height="8" fill="url(#bodyGradient)"/>
+
+    <!-- Torso -->
+    <rect x="85" y="76" width="30" height="35" rx="8" fill="url(#bodyGradient)"/>
+
+    <!-- Chest panel -->
+    <rect x="92" y="85" width="16" height="12" rx="3" fill="url(#headGradient)" opacity="0.5"/>
+
+    <!-- Left Arm -->
+    <line x1="85" y1="85" x2="65" y2="95" stroke="url(#bodyGradient)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="65" cy="95" r="4" fill="url(#bodyGradient)"/>
+
+    <!-- Right Arm -->
+    <line x1="115" y1="85" x2="135" y2="95" stroke="url(#headGradient)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="135" cy="95" r="4" fill="url(#headGradient)"/>
+
+    <!-- Left Leg -->
+    <line x1="92" y1="111" x2="92" y2="150" stroke="url(#legGradient)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="92" cy="150" r="5" fill="url(#legGradient)"/>
+
+    <!-- Right Leg -->
+    <line x1="108" y1="111" x2="108" y2="150" stroke="url(#headGradient)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="108" cy="150" r="5" fill="url(#headGradient)"/>
+
+    <!-- Joint details -->
+    <circle cx="85" cy="85" r="3" fill="url(#accentGradient)"/>
+    <circle cx="115" cy="85" r="3" fill="url(#accentGradient)"/>
+    <circle cx="92" cy="111" r="3" fill="url(#accentGradient)"/>
+    <circle cx="108" cy="111" r="3" fill="url(#accentGradient)"/>
+
+    <!-- Belt/detail -->
+    <rect x="88" y="105" width="24" height="3" fill="url(#accentGradient)"/>
+  </g>
+</svg>

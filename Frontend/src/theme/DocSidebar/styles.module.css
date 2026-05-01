@@ -1,0 +1,299 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.sidebar {
+  width: var(--doc-sidebar-width);
+  background-color: var(--ifm-background-surface-color);
+  border-right: 1px solid var(--ifm-toc-border-color);
+  height: calc(100vh - var(--ifm-navbar-height));
+  position: sticky;
+  top: var(--ifm-navbar-height);
+  overflow-y: auto;
+  padding: 1.5rem 0;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.sidebarNav {
+  height: 100%;
+}
+
+.sidebarList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.sidebarItem {
+  margin-bottom: 0.25rem;
+  list-style: none;
+}
+
+.sidebarItemExpanded {
+  /* Style for expanded items */
+}
+
+.categoryArrow {
+  display: inline-block;
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  color: var(--ifm-color-emphasis-500);
+}
+
+.categoryArrowExpanded {
+  transform: rotate(90deg);
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.125rem 0.5rem;
+  text-decoration: none;
+  color: var(--ifm-color-emphasis-800);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.sidebarLink:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+  color: var(--ifm-color-primary);
+}
+
+.sidebarLinkActive {
+  background-color: var(--ifm-menu-color-background-active);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.sidebarLinkText {
+  flex: 1;
+}
+
+.sidebarLinkIcon {
+  display: flex;
+  align-items: center;
+  color: var(--ifm-color-primary);
+}
+
+.sidebarCategory {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0.5rem;
+  color: var(--ifm-color-emphasis-900);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.sidebarCategory:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+}
+
+.sidebarCategoryText {
+  flex: 1;
+}
+
+.sidebarCategoryToggle {
+  font-size: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  color: var(--ifm-color-emphasis-600);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarCategoryToggle:hover {
+  background-color: var(--ifm-menu-color-background-hover);
+  color: var(--ifm-color-primary);
+}
+
+.sidebarCategoryIcon {
+  transition: transform 0.2s ease;
+}
+
+.sidebarCategoryToggle[aria-expanded="true"] .sidebarCategoryIcon {
+  transform: rotate(90deg);
+}
+
+.sidebarSublist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-left: 0.5rem;
+}
+
+/* Accessibility improvements */
+.sidebarLink:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.sidebarCategoryToggle:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Responsive design */
+@media (max-width: 996px) {
+  .sidebar {
+    position: fixed;
+    top: var(--ifm-navbar-height);
+    left: 0;
+    width: 280px;
+    height: calc(100vh - var(--ifm-navbar-height));
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar[data-show="true"] {
+    transform: translateX(0);
+  }
+
+  .sidebarOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebarOverlay[data-visible="true"] {
+    display: block;
+    opacity: 1;
+  }
+}
+
+@media (min-width: 997px) {
+  .sidebar {
+    display: block;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .sidebar {
+  background-color: var(--ifm-background-surface-color);
+  border-right-color: var(--ifm-toc-border-color);
+}
+
+[data-theme='dark'] .sidebarLink {
+  color: var(--ifm-color-emphasis-300);
+}
+
+[data-theme='dark'] .sidebarLink:hover {
+  color: var(--ifm-color-primary-lighter);
+}
+
+[data-theme='dark'] .sidebarCategory {
+  color: var(--ifm-color-emphasis-100);
+}
+
+/* Placeholder for empty sidebar */
+.sidebarPlaceholder {
+  display: block;
+  padding: 1rem;
+  color: var(--ifm-color-emphasis-500);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Nested item styling */
+.sidebarItemNested .sidebarLink {
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.sidebarItemNested .sidebarLink:hover {
+  background-color: var(--ifm-color-emphasis-100);
+}
+
+[data-theme='dark'] .sidebarItemNested .sidebarLink:hover {
+  background-color: var(--ifm-color-emphasis-800);
+}
+
+/* Active state for nested items */
+.sidebarItemNested .sidebarLinkActive {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+[data-theme='dark'] .sidebarItemNested .sidebarLinkActive {
+  background-color: var(--ifm-color-emphasis-700);
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-400);
+  border-radius: 3px;
+}
+
+[data-theme='dark'] .sidebar::-webkit-scrollbar-track {
+  background: var(--ifm-color-emphasis-800);
+}
+
+[data-theme='dark'] .sidebar::-webkit-scrollbar-thumb {
+  background: var(--ifm-color-emphasis-600);
+}
+
+/* Animation for expanding/collapsing */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebarSublist {
+  animation: fadeIn 0.2s ease;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebarLink,
+  .sidebarCategory,
+  .sidebarCategoryToggle {
+    transition: none;
+  }
+
+  .sidebarSublist {
+    animation: none;
+  }
+}
