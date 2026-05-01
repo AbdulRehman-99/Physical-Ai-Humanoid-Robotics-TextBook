@@ -52,7 +52,7 @@ const ChatKit: React.FC = () => {
       const selectedText = window.getSelection?.()?.toString() || '';
 
       // Call backend API
-      const response = await fetch('http://localhost:8002/chat', {
+      const response = await fetch('https://abdul-rehman-99-textbook.hf.space/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
