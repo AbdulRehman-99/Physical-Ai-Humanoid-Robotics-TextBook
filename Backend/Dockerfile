@@ -34,5 +34,5 @@ COPY --chown=user . $HOME/app
 EXPOSE 7860
 
 # Command to run the application
-# We use the consolidated main.py which starts all services
-CMD ["python", "main.py"]
+# Use app.py as the production entry point for Hugging Face
+CMD ["python", "app.py"]

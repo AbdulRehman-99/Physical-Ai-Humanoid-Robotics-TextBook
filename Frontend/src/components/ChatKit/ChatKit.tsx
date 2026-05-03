@@ -11,9 +11,6 @@ interface Message {
 }
 
 const ChatKit: React.FC = () => {
-  const { siteConfig } = useDocusaurusContext();
-  const backendUrl = (siteConfig.customFields?.backendUrl as string) || 'https://abdul-rehman-99-textbook.hf.space';
-
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -51,52 +48,63 @@ const ChatKit: React.FC = () => {
     setInputValue('');
     setIsLoading(true);
 
-    try {
-      // Get selected text if any
-      const selectedText = window.getSelection?.()?.toString() || '';
+    // List of backend URLs to try (local development and production)
+    const backendUrls = [
+      'http://localhost:8000/chat',
+      'http://localhost:8002/chat',
+      'https://abdul-rehman-99-textbook.hf.space/chat'
+    ];
 
-      // Call backend API
-      const response = await fetch(`${backendUrl}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputValue,
-          selected_text: selectedText || null,
-        }),
-      });
+    let success = false;
+    let responseData = null;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    for (const url of backendUrls) {
+      try {
+        console.log(`Attempting to connect to backend at: ${url}`);
+        const selectedText = window.getSelection?.()?.toString() || '';
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: inputValue,
+            selected_text: selectedText || null,
+          }),
+        });
+
+        if (response.ok) {
+          responseData = await response.json();
+          success = true;
+          break; // Exit loop on success
+        }
+      } catch (error) {
+        console.warn(`Failed to connect to ${url}:`, error);
       }
+    }
 
-      const data = await response.json();
-
+    if (success && responseData) {
       // Add assistant message
       const assistantMessage: Message = {
         id: Date.now().toString(),
-        content: data.response,
+        content: responseData.response,
         role: 'assistant',
         timestamp: new Date(),
-        sources: data.sources || [],
+        sources: responseData.sources || [],
       };
-
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-
+    } else {
       const errorMessage: Message = {
         id: Date.now().toString(),
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: 'Sorry, I couldn\'t connect to any backend service. Please ensure your backend is running on port 8000 or 8002.',
         role: 'assistant',
         timestamp: new Date(),
       };
-
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   const toggleExpand = () => {
