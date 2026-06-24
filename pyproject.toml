@@ -1,0 +1,5 @@
+[tool.uv.workspace]
+members = ["Backend"]
+
+[tool.uv]
+python = "3.13"
