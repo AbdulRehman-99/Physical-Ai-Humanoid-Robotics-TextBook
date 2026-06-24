@@ -8,7 +8,7 @@ RATE_LIMIT_MAX_REQUESTS = 100  # Max requests per minute per IP
 RATE_LIMIT_WINDOW = 60  # Time window in seconds
 
 # Qdrant configuration
-QDRANT_TOP_K = 5  # Default number of chunks to retrieve
+QDRANT_TOP_K = 3  # Default number of chunks to retrieve
 
 # Agent configuration
 AGENT_TIMEOUT = 30  # Timeout for agent calls

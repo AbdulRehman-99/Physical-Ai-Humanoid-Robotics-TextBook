@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, AsyncGenerator
 import sys
 import os
+import json
 from pathlib import Path
 
 # Add the Retrieval/src directory to the path
@@ -43,6 +45,18 @@ class ChatPayload(BaseModel):
     )
 
 
+class ChatStreamPayload(BaseModel):
+    session_id: Optional[str] = Field(
+        None,
+        description="Session ID for conversation continuity"
+    )
+    message: str = Field(..., description="The user's message or question")
+    selected_text: Optional[str] = Field(
+        None,
+        description="Optional selected text from the UI to use as context"
+    )
+
+
 class ChatResponse(BaseModel):
     response: str = Field(..., description="The agent's response to the user's query")
     source_chunks: List[str] = Field(
@@ -59,6 +73,25 @@ class ChatResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     error: str = Field(..., description="Error message")
+
+
+# In-memory conversation sessions (last 5 turns each)
+conversation_sessions: Dict[str, List[Dict[str, str]]] = {}
+
+
+def _get_or_create_session(session_id: Optional[str]) -> str:
+    if session_id and session_id in conversation_sessions:
+        return session_id
+    new_id = session_id or f"session_{len(conversation_sessions) + 1}_{int(asyncio.get_event_loop().time())}"
+    if new_id not in conversation_sessions:
+        conversation_sessions[new_id] = []
+    return new_id
+
+
+def _update_memory(session_id: str, user_msg: str, assistant_msg: str):
+    conversation_sessions[session_id].append({"user": user_msg, "assistant": assistant_msg})
+    if len(conversation_sessions[session_id]) > 5:
+        conversation_sessions[session_id] = conversation_sessions[session_id][-5:]
 
 
 @app.on_event("startup")
@@ -116,6 +149,44 @@ async def chat(payload: ChatPayload):
             status_code=500,
             detail="Internal server error occurred while processing the request"
         )
+
+
+@app.post("/chat/stream")
+async def chat_stream(payload: ChatStreamPayload):
+    """
+    Stream response tokens via SSE for a user message with optional session memory.
+    """
+    session_id = _get_or_create_session(payload.session_id)
+
+    agent = RAGAgent()
+
+    async def token_generator():
+        try:
+            current_response = ""
+            async for token in agent.process_message_streamed(
+                message=payload.message,
+                selected_text=payload.selected_text,
+                memory=conversation_sessions.get(session_id),
+            ):
+                current_response += token
+                yield json.dumps({"token": token}) + "\n"
+
+            _update_memory(session_id, payload.message, current_response)
+            yield json.dumps({"done": True, "session_id": session_id}) + "\n"
+
+        except Exception as e:
+            logger.error(f"Stream error: {str(e)}")
+            yield json.dumps({"error": "Internal server error"}) + "\n"
+
+    return StreamingResponse(
+        token_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.get("/health")

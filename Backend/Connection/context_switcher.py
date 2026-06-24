@@ -1,5 +1,6 @@
 from typing import Optional, Dict, Any, List
 from .models import ChatContext, RetrievedChunk
+from .config import QDRANT_TOP_K
 import sys
 import os
 from pathlib import Path
@@ -31,7 +32,7 @@ class ContextSwitcher:
             # Using the retrieval service to get relevant chunks
             try:
                 # Use the retrieval service to get search results
-                search_results = self.retrieval_service.search_similar(user_message, top_k=5)
+                search_results = self.retrieval_service.search_similar(user_message, top_k=QDRANT_TOP_K)
                 if search_results:
                     # Convert search results to the expected format for retrieved_chunks
                     retrieved_chunks = []
@@ -105,7 +106,7 @@ class ContextSwitcher:
             # If no selected_text, retrieve from Qdrant using the proper retrieval service
             try:
                 # Use search_similar to get individual results that can be formatted properly
-                search_results = self.retrieval_service.search_similar(user_message, top_k=5)
+                search_results = self.retrieval_service.search_similar(user_message, top_k=QDRANT_TOP_K)
                 if search_results:
                     # Convert search results to the expected format for retrieved_chunks
                     retrieved_chunks = []

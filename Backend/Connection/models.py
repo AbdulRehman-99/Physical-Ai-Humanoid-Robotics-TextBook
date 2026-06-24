@@ -6,6 +6,7 @@ class ChatRequest(BaseModel):
     """Represents a user's chat input with message and optional selected_text for context"""
     message: str
     selected_text: Optional[str] = None
+    session_id: Optional[str] = None
 
 
 class ChunkMetadata(BaseModel):
@@ -35,3 +36,4 @@ class ChatContext(BaseModel):
     retrieved_chunks: Optional[List[RetrievedChunk]] = None
     selected_text: Optional[str] = None
     effective_context: str
+    memory: Optional[List[dict]] = None

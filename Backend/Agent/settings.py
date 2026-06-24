@@ -39,7 +39,7 @@ class Settings(BaseSettings):
 
     # Vector Database Configuration
     collection_name: str = os.getenv("COLLECTION_NAME", "book_content")
-    top_k: int = int(os.getenv("TOP_K", "5"))
+    top_k: int = int(os.getenv("TOP_K", "3"))
 
     # Application Configuration
     host: str = os.getenv("HOST", "0.0.0.0")

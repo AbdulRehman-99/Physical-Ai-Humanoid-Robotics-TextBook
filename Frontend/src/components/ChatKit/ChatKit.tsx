@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import './ChatKit.css';
 
@@ -9,6 +9,12 @@ interface Message {
   timestamp: Date;
   sources?: Array<{text: string, metadata?: any}>;
 }
+
+const BACKEND_URLS = [
+  'http://localhost:8000',
+  'http://localhost:8002',
+  'https://abdul-rehman-99-textbook.hf.space',
+];
 
 const ChatKit: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -22,7 +28,14 @@ const ChatKit: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(() => `session_${Date.now()}`);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const displayMessages = showHistory
+    ? messages
+    : messages.slice(-6);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -30,13 +43,126 @@ const ChatKit: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, displayMessages.length]);
+
+  const tryStream = useCallback(async (
+    message: string,
+    selectedText: string,
+  ): Promise<{ success: boolean; fullResponse?: string }> => {
+    for (const baseUrl of BACKEND_URLS) {
+      const url = `${baseUrl}/chat/stream`;
+      try {
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            selected_text: selectedText || null,
+            session_id: sessionId,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) continue;
+
+        const reader = response.body?.getReader();
+        if (!reader) continue;
+
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let accumulated = '';
+
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          content: '',
+          role: 'assistant',
+          timestamp: new Date(),
+        }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const data = JSON.parse(line);
+              if (data.token) {
+                accumulated += data.token;
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last && last.role === 'assistant') {
+                    last.content = accumulated;
+                  }
+                  return [...updated];
+                });
+              } else if (data.done) {
+                if (data.session_id) {
+                  setSessionId(data.session_id);
+                }
+                return { success: true, fullResponse: accumulated };
+              } else if (data.error) {
+                return { success: false };
+              }
+            } catch {
+              // ignore parse errors on partial lines
+            }
+          }
+        }
+
+        return { success: true, fullResponse: accumulated };
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return { success: false };
+        }
+        console.warn(`Stream failed for ${url}:`, err);
+      } finally {
+        abortControllerRef.current = null;
+      }
+    }
+    return { success: false };
+  }, [sessionId]);
+
+  const tryPost = useCallback(async (
+    message: string,
+    selectedText: string,
+  ): Promise<{ success: boolean; response?: string; sources?: any[] }> => {
+    for (const baseUrl of BACKEND_URLS) {
+      const url = `${baseUrl}/chat`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            selected_text: selectedText || null,
+            session_id: sessionId,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return { success: true, response: data.response, sources: data.sources || [] };
+        }
+      } catch (err) {
+        console.warn(`POST failed for ${url}:`, err);
+      }
+    }
+    return { success: false };
+  }, [sessionId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
 
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue,
@@ -45,63 +171,33 @@ const ChatKit: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue('');
     setIsLoading(true);
 
-    // List of backend URLs to try (local development and production)
-    const backendUrls = [
-      'http://localhost:8000/chat',
-      'http://localhost:8002/chat',
-      'https://abdul-rehman-99-textbook.hf.space/chat'
-    ];
+    const selectedText = window.getSelection()?.toString() || '';
 
-    let success = false;
-    let responseData = null;
+    // Try streaming first, fall back to POST
+    const streamResult = await tryStream(currentInput, selectedText);
 
-    for (const url of backendUrls) {
-      try {
-        console.log(`Attempting to connect to backend at: ${url}`);
-        const selectedText = window.getSelection?.()?.toString() || '';
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: inputValue,
-            selected_text: selectedText || null,
-          }),
-        });
-
-        if (response.ok) {
-          responseData = await response.json();
-          success = true;
-          break; // Exit loop on success
-        }
-      } catch (error) {
-        console.warn(`Failed to connect to ${url}:`, error);
+    if (!streamResult.success) {
+      const postResult = await tryPost(currentInput, selectedText);
+      if (postResult.success) {
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          content: postResult.response || '',
+          role: 'assistant',
+          timestamp: new Date(),
+          sources: postResult.sources,
+        }]);
+      } else {
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          content: 'Sorry, I couldn\'t connect to any backend service. Please ensure your backend is running.',
+          role: 'assistant',
+          timestamp: new Date(),
+        }]);
       }
-    }
-
-    if (success && responseData) {
-      // Add assistant message
-      const assistantMessage: Message = {
-        id: Date.now().toString(),
-        content: responseData.response,
-        role: 'assistant',
-        timestamp: new Date(),
-        sources: responseData.sources || [],
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-    } else {
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        content: 'Sorry, I couldn\'t connect to any backend service. Please ensure your backend is running on port 8000 or 8002.',
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
     }
 
     setIsLoading(false);
@@ -145,8 +241,16 @@ const ChatKit: React.FC = () => {
           </div>
 
           <div className="chatkit-content">
+            <div className="chatkit-history-bar">
+              <button
+                className="chatkit-history-toggle"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? 'Show last 6' : 'Show all'}
+              </button>
+            </div>
             <div className="chatkit-messages">
-              {messages.map((message) => (
+              {displayMessages.map((message) => (
                 <div
                   key={message.id}
                   className={`chatkit-message ${message.role}`}
@@ -168,7 +272,7 @@ const ChatKit: React.FC = () => {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+              {isLoading && messages[messages.length - 1]?.role === 'user' && (
                 <div className="chatkit-message assistant">
                   <div className="chatkit-message-content">
                     <div className="typing-indicator">

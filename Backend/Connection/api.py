@@ -1,14 +1,16 @@
 from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import asyncio
 import os
+import json
 from dotenv import load_dotenv
 
 # Load environment variables from .env file in the project root
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
 
-from .models import ChatRequest, ChatResponse
+from .models import ChatRequest, ChatResponse, ChatContext
 from .agent_wrapper import AgentWrapper
 from .context_switcher import ContextSwitcher
 from .response_formatter import ResponseFormatter
@@ -20,6 +22,25 @@ import time
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# In-memory conversation sessions (last 5 turns each)
+conversation_sessions: Dict[str, list] = {}
+
+
+def _get_or_create_session(session_id: Optional[str]) -> str:
+    if session_id and session_id in conversation_sessions:
+        return session_id
+    new_id = session_id or f"session_{len(conversation_sessions) + 1}_{time.time()}"
+    if new_id not in conversation_sessions:
+        conversation_sessions[new_id] = []
+    return new_id
+
+
+def _update_memory(session_id: str, user_msg: str, assistant_msg: str):
+    conversation_sessions[session_id].append({"user": user_msg, "assistant": assistant_msg})
+    if len(conversation_sessions[session_id]) > 5:
+        conversation_sessions[session_id] = conversation_sessions[session_id][-5:]
+
 
 # Simple in-memory rate limiter
 class RateLimiter:
@@ -98,14 +119,20 @@ async def chat_endpoint(chat_request: ChatRequest, request: Request) -> ChatResp
                 sources=[]
             )
 
+        session_id = _get_or_create_session(chat_request.session_id)
+
         # Determine context using the context switcher
         chat_context = await context_switcher.determine_context_async(
             user_message=sanitized_message,
             selected_text=sanitized_selected_text
         )
+        chat_context.memory = conversation_sessions.get(session_id)
 
         # Process with agent
         agent_response = await agent_wrapper.process_with_context(chat_context)
+
+        # Update memory
+        _update_memory(session_id, sanitized_message, agent_response)
 
         # Format the response
         formatted_response = response_formatter.format_response(
@@ -122,6 +149,58 @@ async def chat_endpoint(chat_request: ChatRequest, request: Request) -> ChatResp
             response="I can only answer questions about the book content. Please ask a question related to the book.",
             sources=[]
         )
+
+
+@app.post("/chat/stream")
+async def chat_stream_endpoint(chat_request: ChatRequest, request: Request):
+    """
+    Stream response tokens via SSE with optional session memory for conversation continuity.
+    Uses a simple session_id header or IP-based session.
+    """
+    try:
+        session_id = _get_or_create_session(chat_request.session_id)
+        sanitized_message = chat_request.message.strip()
+        sanitized_selected_text = chat_request.selected_text.strip() if chat_request.selected_text else None
+
+        if not sanitized_message:
+            async def _empty():
+                yield json.dumps({"error": "Empty message"}) + "\n"
+            return StreamingResponse(_empty(), media_type="text/event-stream")
+
+        chat_context = await context_switcher.determine_context_async(
+            user_message=sanitized_message,
+            selected_text=sanitized_selected_text
+        )
+        chat_context.memory = conversation_sessions.get(session_id)
+
+        async def token_generator():
+            try:
+                current_response = ""
+                async for token in agent_wrapper.process_with_context_streamed(chat_context):
+                    current_response += token
+                    yield json.dumps({"token": token}) + "\n"
+
+                _update_memory(session_id, sanitized_message, current_response)
+                yield json.dumps({"done": True, "session_id": session_id}) + "\n"
+            except Exception as e:
+                logger.error(f"Stream error: {str(e)}")
+                yield json.dumps({"error": "Internal server error"}) + "\n"
+
+        return StreamingResponse(
+            token_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Error setting up stream: {str(e)}")
+        async def _error():
+            yield json.dumps({"error": "Internal server error"}) + "\n"
+        return StreamingResponse(_error(), media_type="text/event-stream")
 
 
 @app.get("/health")
