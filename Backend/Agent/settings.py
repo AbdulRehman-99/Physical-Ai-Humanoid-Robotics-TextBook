@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "embed-multilingual-v2.0")  # Cohere model
 
+    # OpenRouter Configuration
+    openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
+    openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    openrouter_model: str = os.getenv("OPENROUTER_MODEL", "qwen-2.5-72b-instruct")
+
     # Vector Database Configuration
     collection_name: str = os.getenv("COLLECTION_NAME", "book_content")
     top_k: int = int(os.getenv("TOP_K", "5"))

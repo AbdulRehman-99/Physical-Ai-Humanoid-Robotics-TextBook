@@ -6,9 +6,7 @@ numpy
 pandas
 openai
 python-dotenv
-google-generativeai
 cohere
 openai-agents
-litellm
 pytest
 pydantic-settings

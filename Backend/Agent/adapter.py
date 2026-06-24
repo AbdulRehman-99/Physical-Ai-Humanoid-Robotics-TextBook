@@ -1,106 +1,81 @@
-from litellm import completion
-from typing import Optional, Dict, Any
-import os
-import time
 import logging
+import time
+from typing import Optional, List, Dict, Any
+from openai import AsyncOpenAI
+from agents import Agent, Runner, set_default_openai_client, set_tracing_disabled
 import settings
 
 
 logger = logging.getLogger(__name__)
 
 
-class GeminiAdapter:
+class OpenRouterAdapter:
     """
-    Adapter to route OpenAI SDK requests to Google Gemini using LiteLLM
+    Adapter that configures the OpenAI Agent SDK with OpenRouter as the provider.
+    Provides both Agent SDK (Agent/Runner) and raw chat completions interfaces.
     """
 
     def __init__(self):
-        # Configure LiteLLM for Gemini
-        os.environ["GEMINI_API_KEY"] = settings.settings.gemini_api_key
+        api_key = settings.settings.openrouter_api_key
+        base_url = settings.settings.openrouter_base_url
 
-    def create_client(self):
-        """
-        Create and return a LiteLLM client configured for Gemini
-        """
-        return self
+        # Disable tracing to avoid sending OpenRouter keys to OpenAI's trace endpoint
+        set_tracing_disabled(True)
 
-    def chat_completions_create(
+        self.client = AsyncOpenAI(
+            base_url=base_url,
+            api_key=api_key,
+        )
+        set_default_openai_client(self.client)
+
+    def create_agent(
         self,
-        model: str = None,
-        messages: list = None,
+        instructions: str,
+        model: Optional[str] = None,
+    ) -> Agent:
+        return Agent(
+            name="RAG Agent",
+            instructions=instructions,
+            model=model or settings.settings.openrouter_model,
+        )
+
+    async def run_agent(self, agent: Agent, user_input: str) -> str:
+        result = await Runner.run(agent, input=user_input)
+        return result.final_output
+
+    async def chat_completions_create(
+        self,
+        model: Optional[str] = None,
+        messages: Optional[List[Dict[str, Any]]] = None,
         max_retries: int = 3,
-        **kwargs
+        **kwargs,
     ):
-        """
-        Wrapper for LiteLLM completion that mimics OpenAI's API
-        Includes comprehensive error handling and retry logic
-        """
         if model is None:
-            model = settings.settings.gemini_model
+            model = settings.settings.openrouter_model
 
         last_exception = None
         for attempt in range(max_retries):
             try:
-                response = completion(
-                    model=f"gemini/{model}",
+                response = await self.client.chat.completions.create(
+                    model=model,
                     messages=messages,
-                    api_key=settings.settings.gemini_api_key,
-                    **kwargs
+                    **kwargs,
                 )
                 return response
             except Exception as e:
                 last_exception = e
-                logger.warning(f"Gemini API call failed (attempt {attempt + 1}/{max_retries}): {str(e)}")
-
-                if attempt < max_retries - 1:  # Don't sleep on the last attempt
-                    time.sleep(2 ** attempt)  # Exponential backoff
-
-        # If all retries failed, log the error and raise
-        logger.error(f"All {max_retries} attempts to call Gemini API failed: {str(last_exception)}")
-        raise last_exception
-
-    def completions_create(
-        self,
-        model: str = None,
-        prompt: str = None,
-        max_retries: int = 3,
-        **kwargs
-    ):
-        """
-        Wrapper for LiteLLM text completion that mimics OpenAI's API
-        Includes comprehensive error handling and retry logic
-        """
-        if model is None:
-            model = settings.settings.gemini_model
-
-        last_exception = None
-        for attempt in range(max_retries):
-            try:
-                response = completion(
-                    model=f"gemini/{model}",
-                    prompt=prompt,
-                    api_key=settings.settings.gemini_api_key,
-                    **kwargs
+                logger.warning(
+                    f"OpenRouter API call failed (attempt {attempt + 1}/{max_retries}): {str(e)}"
                 )
-                return response
-            except Exception as e:
-                last_exception = e
-                logger.warning(f"Gemini API call failed (attempt {attempt + 1}/{max_retries}): {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
 
-                if attempt < max_retries - 1:  # Don't sleep on the last attempt
-                    time.sleep(2 ** attempt)  # Exponential backoff
-
-        # If all retries failed, log the error and raise
-        logger.error(f"All {max_retries} attempts to call Gemini API failed: {str(last_exception)}")
+        logger.error(f"All {max_retries} attempts to call OpenRouter API failed: {str(last_exception)}")
         raise last_exception
 
 
-# Singleton instance
-gemini_client = GeminiAdapter()
+openrouter_adapter = OpenRouterAdapter()
 
 
-def get_gemini_client():
-    """
-    Get the configured Gemini client
-    """
-    return gemini_client
+def get_agent_adapter() -> OpenRouterAdapter:
+    return openrouter_adapter

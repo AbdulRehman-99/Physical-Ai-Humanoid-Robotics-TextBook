@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from adapter import get_gemini_client
+from adapter import get_agent_adapter
 import sys
 import os
 import importlib.util
@@ -47,7 +47,7 @@ class RAGAgent:
     """
 
     def __init__(self):
-        self.gemini_client = get_gemini_client()
+        self.adapter = get_agent_adapter()
         self.retrieval_service = get_retrieval_service()
 
     async def process_message(self, message: str, selected_text: Optional[str] = None) -> AgentResponse:
@@ -118,9 +118,9 @@ class RAGAgent:
         Generate a response based on the message and context
         """
         try:
-            # Create the system prompt based on context type
+            # Build instructions (system prompt) based on context type
             if context_source.type == "selected_text":
-                system_prompt = f"""
+                instructions = f"""
                 You are an AI assistant that answers questions based strictly on the provided text.
                 Answer the user's question based only on the following text:
                 {context_source.content}
@@ -132,7 +132,7 @@ class RAGAgent:
                 4. Keep your answer concise and accurate
                 """
             else:  # vector_retrieval
-                system_prompt = f"""
+                instructions = f"""
                 You are an AI assistant that answers questions based on the provided book content.
                 Answer the user's question based on the following context from the book:
                 {context_source.content}
@@ -144,34 +144,21 @@ class RAGAgent:
                 4. Keep your answer concise and accurate
                 """
 
-            # Create the messages for the LLM
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message}
-            ]
-
-            # Call the Gemini API through the adapter
-            response = self.gemini_client.chat_completions_create(
-                model=settings.settings.gemini_model,
-                messages=messages,
-                max_tokens=500,
-                temperature=0.3
+            # Create agent and run via OpenAI Agent SDK
+            agent = self.adapter.create_agent(
+                instructions=instructions,
+                model=settings.settings.openrouter_model,
             )
+            generated_response = await self.adapter.run_agent(agent, message)
 
-            # Extract the response content
-            if response.choices and len(response.choices) > 0:
-                generated_response = response.choices[0].message.content
+            # Validate academic reliability of the response
+            validation_result = validate_response_quality(generated_response, context_source.content)
 
-                # Validate academic reliability of the response
-                validation_result = validate_response_quality(generated_response, context_source.content)
+            # Log validation results
+            if not validation_result.get("is_reliable", True):
+                logger.warning(f"Response may not meet academic reliability standards: {validation_result.get('issues', [])}")
 
-                # Log validation results
-                if not validation_result.get("is_reliable", True):
-                    logger.warning(f"Response may not meet academic reliability standards: {validation_result.get('issues', [])}")
-
-                return generated_response
-            else:
-                return "I couldn't generate a response based on the provided context."
+            return generated_response
 
         except Exception as e:
             logger.error(f"Error generating response: {str(e)}")
@@ -194,8 +181,8 @@ class RAGAgent:
                 {"role": "user", "content": message}
             ]
 
-            response = self.gemini_client.chat_completions_create(
-                model=settings.settings.gemini_model,
+            response = await self.adapter.chat_completions_create(
+                model=settings.settings.openrouter_model,
                 messages=messages,
                 max_tokens=20,
                 temperature=0.1
