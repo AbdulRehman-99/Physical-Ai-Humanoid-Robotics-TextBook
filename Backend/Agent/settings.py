@@ -21,7 +21,6 @@ for env_path in env_locations:
 
 class Settings(BaseSettings):
     # API Keys
-    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     cohere_api_key: str = os.getenv("COHERE_API_KEY", "")
     qdrant_api_key: Optional[str] = os.getenv("QDRANT_API_KEY")
 
@@ -31,7 +30,6 @@ class Settings(BaseSettings):
     qdrant_port: Optional[int] = int(os.getenv("QDRANT_PORT", "6333"))
 
     # Model Configuration
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "embed-multilingual-v2.0")  # Cohere model
 
     # OpenRouter Configuration

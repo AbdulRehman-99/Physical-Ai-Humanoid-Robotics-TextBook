@@ -1,44 +1,39 @@
 """
-Test script to validate that the Agent SDK can successfully handshake with Gemini
+Test script to validate that the Agent SDK can successfully handshake with OpenRouter
 """
 import asyncio
-from .adapter import get_gemini_client
-from .settings import settings
+from adapter import get_agent_adapter
+import settings
 
 
-async def test_gemini_connection():
+async def test_openrouter_connection():
     """
-    Test the connection to the Gemini API through LiteLLM
+    Test the connection to the OpenRouter API through the Agent SDK
     """
     try:
-        client = get_gemini_client()
+        adapter = get_agent_adapter()
 
-        # Test a simple completion request
+        # Test raw chat completion
         messages = [
             {"role": "user", "content": "Hello, this is a test message to verify the connection."}
         ]
 
-        response = client.chat_completions_create(
-            model=settings.gemini_model,
+        response = await adapter.chat_completions_create(
+            model=settings.settings.openrouter_model,
             messages=messages,
             max_tokens=50,
             temperature=0.7
         )
 
-        print("✅ Gemini connection test successful!")
+        print("✅ OpenRouter connection test successful!")
         print(f"Response: {response.choices[0].message.content[:100]}...")
         return True
 
     except Exception as e:
-        print(f"❌ Gemini connection test failed: {str(e)}")
+        print(f"❌ OpenRouter connection test failed: {str(e)}")
         return False
 
 
 if __name__ == "__main__":
-    print("Testing Gemini connection...")
-    success = asyncio.run(test_gemini_connection())
-
-    if success:
-        print("✅ Adapter handshake with Gemini successful!")
-    else:
-        print("❌ Adapter handshake with Gemini failed!")
+    print("Testing OpenRouter connection...")
+    success = asyncio.run(test_openrouter_connection())

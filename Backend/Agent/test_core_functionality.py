@@ -4,10 +4,10 @@ Comprehensive tests for the RAG Agent core functionality
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from .agent import RAGAgent, AgentResponse, ContextSource
-from .retrieval import RetrievalService
-from .adapter import GeminiAdapter
-from .validation import validate_response_quality
+from agent import RAGAgent, AgentResponse, ContextSource
+from retrieval import RetrievalService
+from adapter import OpenRouterAdapter
+from validation import validate_response_quality
 
 
 class TestRAGAgent:
@@ -16,9 +16,9 @@ class TestRAGAgent:
     @pytest.fixture
     def agent(self):
         """Create a test agent instance"""
-        with patch('Backend.Agent.agent.get_gemini_client') as mock_gemini, \
-             patch('Backend.Agent.agent.get_retrieval_service') as mock_retrieval:
-            mock_gemini.return_value = Mock(spec=GeminiAdapter)
+        with patch('agent.get_agent_adapter') as mock_adapter, \
+             patch('agent.get_retrieval_service') as mock_retrieval:
+            mock_adapter.return_value = Mock(spec=OpenRouterAdapter)
             mock_retrieval.return_value = Mock(spec=RetrievalService)
             return RAGAgent()
 
