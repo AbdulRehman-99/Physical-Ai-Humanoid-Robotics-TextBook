@@ -20,31 +20,39 @@ def run_agent_api():
     """Run the Agent API on port 8001"""
     print("[Starting] Agent API on port 8001...")
     agent_path = Path(__file__).parent / "Agent"
-    # Run as a separate process to avoid path/import issues
     import subprocess
     env = os.environ.copy()
-    # Add Retrieval/src to PYTHONPATH so Agent can find it
     retrieval_src = str(Path(__file__).parent / "Retrieval" / "src")
     env["PYTHONPATH"] = f"{retrieval_src}{os.pathsep}{env.get('PYTHONPATH', '')}"
-    
+
+    debug = os.getenv("DEBUG", "False").lower() == "true"
+    uvicorn_args = ["--host", "0.0.0.0", "--port", "8001"]
+    if debug:
+        uvicorn_args.append("--reload")
+
     subprocess.run([
-        sys.executable, "-m", "uvicorn", "main:app", 
-        "--host", "0.0.0.0", "--port", "8001"
+        sys.executable, "-m", "uvicorn", "main:app",
+        *uvicorn_args,
     ], cwd=str(agent_path), env=env)
+
 
 def run_connection_api():
     """Run the Connection API on port 8000 (Unified Entry)"""
     print("[Starting] Connection API (Main) on port 8000...")
     backend_root = Path(__file__).parent
-    
-    # Run directly in this process or via subprocess
+
     import subprocess
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{str(backend_root)}{os.pathsep}{env.get('PYTHONPATH', '')}"
-    
+
+    debug = os.getenv("DEBUG", "False").lower() == "true"
+    uvicorn_args = ["--host", "0.0.0.0", "--port", "8000"]
+    if debug:
+        uvicorn_args.append("--reload")
+
     subprocess.run([
-        sys.executable, "-m", "uvicorn", "Connection.api:app", 
-        "--host", "0.0.0.0", "--port", "8000"
+        sys.executable, "-m", "uvicorn", "Connection.api:app",
+        *uvicorn_args,
     ], cwd=str(backend_root), env=env)
 
 if __name__ == "__main__":

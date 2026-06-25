@@ -13,3 +13,7 @@ QDRANT_TOP_K = 3  # Default number of chunks to retrieve
 # Agent configuration
 AGENT_TIMEOUT = 30  # Timeout for agent calls
 AGENT_RETRY_ATTEMPTS = 3  # Retry attempts for agent calls
+
+# Session configuration
+SESSION_MEMORY_TURNS = 5  # Number of conversation turns to keep in memory
+SESSION_TTL_SECONDS = 1800  # Session idle timeout (30 min)

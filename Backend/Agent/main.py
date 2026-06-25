@@ -43,6 +43,10 @@ class ChatPayload(BaseModel):
         None,
         description="Optional selected text from the UI to use as context"
     )
+    session_id: Optional[str] = Field(
+        None,
+        description="Session ID for conversation continuity"
+    )
 
 
 class ChatStreamPayload(BaseModel):
@@ -126,14 +130,19 @@ async def chat(payload: ChatPayload):
                 detail="Selected text exceeds 10,000 character limit"
             )
 
+        session_id = _get_or_create_session(payload.session_id)
+
         # Initialize the RAG Agent
         agent = RAGAgent()
 
         # Get response from the agent
         response = await agent.process_message(
             message=payload.message,
-            selected_text=payload.selected_text
+            selected_text=payload.selected_text,
+            memory=conversation_sessions.get(session_id),
         )
+
+        _update_memory(session_id, payload.message, response.response)
 
         return ChatResponse(
             response=response.response,

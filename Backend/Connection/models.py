@@ -21,6 +21,7 @@ class ChatResponse(BaseModel):
     """Represents the AI-generated response to the user's query, including sources with metadata (module, chapter, section, version)"""
     response: str
     sources: List[str] = []
+    is_off_topic: bool = False
 
 
 class RetrievedChunk(BaseModel):

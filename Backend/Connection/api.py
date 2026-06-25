@@ -5,41 +5,67 @@ from typing import Dict, Any, Optional
 import asyncio
 import os
 import json
+import uuid
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # Load environment variables from .env file in the project root
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
 
 from .models import ChatRequest, ChatResponse, ChatContext
-from .agent_wrapper import AgentWrapper
+from .agent_wrapper import AgentWrapper, OFF_TOPIC_SENTINEL
 from .context_switcher import ContextSwitcher
 from .response_formatter import ResponseFormatter
-from .config import TIMEOUT_SECONDS, RETRY_ATTEMPTS, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW
+from .config import (
+    TIMEOUT_SECONDS, RETRY_ATTEMPTS,
+    RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW,
+    SESSION_MEMORY_TURNS, SESSION_TTL_SECONDS,
+)
 import logging
 from collections import defaultdict
-import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# In-memory conversation sessions (last 5 turns each)
+# In-memory conversation sessions
 conversation_sessions: Dict[str, list] = {}
+session_last_access: Dict[str, float] = {}
 
 
 def _get_or_create_session(session_id: Optional[str]) -> str:
     if session_id and session_id in conversation_sessions:
+        session_last_access[session_id] = time.time()
         return session_id
-    new_id = session_id or f"session_{len(conversation_sessions) + 1}_{time.time()}"
+    new_id = session_id or str(uuid.uuid4())
     if new_id not in conversation_sessions:
         conversation_sessions[new_id] = []
+        session_last_access[new_id] = time.time()
     return new_id
 
 
 def _update_memory(session_id: str, user_msg: str, assistant_msg: str):
     conversation_sessions[session_id].append({"user": user_msg, "assistant": assistant_msg})
-    if len(conversation_sessions[session_id]) > 5:
-        conversation_sessions[session_id] = conversation_sessions[session_id][-5:]
+    session_last_access[session_id] = time.time()
+    if len(conversation_sessions[session_id]) > SESSION_MEMORY_TURNS:
+        conversation_sessions[session_id] = conversation_sessions[session_id][-SESSION_MEMORY_TURNS:]
+
+
+async def _session_cleanup_task():
+    """Periodically evict sessions idle longer than SESSION_TTL_SECONDS."""
+    while True:
+        await asyncio.sleep(300)  # run every 5 minutes
+        now = time.time()
+        stale = [
+            sid for sid, last in session_last_access.items()
+            if now - last > SESSION_TTL_SECONDS
+        ]
+        for sid in stale:
+            conversation_sessions.pop(sid, None)
+            session_last_access.pop(sid, None)
+        if stale:
+            logger.info(f"Evicted {len(stale)} stale sessions")
 
 
 # Simple in-memory rate limiter
@@ -76,6 +102,12 @@ app.add_middleware(
 agent_wrapper = AgentWrapper()
 context_switcher = ContextSwitcher()
 response_formatter = ResponseFormatter()
+
+
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(_session_cleanup_task())
+    logger.info("Session cleanup task started")
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(chat_request: ChatRequest, request: Request) -> ChatResponse:
@@ -131,6 +163,14 @@ async def chat_endpoint(chat_request: ChatRequest, request: Request) -> ChatResp
         # Process with agent
         agent_response = await agent_wrapper.process_with_context(chat_context)
 
+        # Check if guardrail triggered (off-topic query)
+        if agent_response == OFF_TOPIC_SENTINEL:
+            return ChatResponse(
+                response="I can only answer questions about the book content. Please ask a question related to the book.",
+                sources=[],
+                is_off_topic=True,
+            )
+
         # Update memory
         _update_memory(session_id, sanitized_message, agent_response)
 
@@ -176,7 +216,15 @@ async def chat_stream_endpoint(chat_request: ChatRequest, request: Request):
         async def token_generator():
             try:
                 current_response = ""
+                is_first = True
                 async for token in agent_wrapper.process_with_context_streamed(chat_context):
+                    if is_first and token == OFF_TOPIC_SENTINEL:
+                        yield json.dumps({
+                            "type": "off_topic",
+                            "content": "I can only answer questions about the book content. Please ask a question related to the book.",
+                        }) + "\n"
+                        return
+                    is_first = False
                     current_response += token
                     yield json.dumps({"token": token}) + "\n"
 

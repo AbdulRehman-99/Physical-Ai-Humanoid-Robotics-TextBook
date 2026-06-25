@@ -62,7 +62,7 @@ class OpenRouterAdapter:
         self,
         instructions: str,
         model: Optional[str] = None,
-        max_tokens: int = 400,
+        max_tokens: int = 150,
         input_guardrails: Optional[List[InputGuardrail]] = None,
         output_guardrails: Optional[List[OutputGuardrail]] = None,
     ) -> Agent:
@@ -109,10 +109,6 @@ class OpenRouterAdapter:
             if event.type == "raw_response_event" and getattr(event.data, 'type', None) == "response.output_text.delta":
                 if event.data.delta:
                     yield event.data.delta
-
-        # Yield the final output if nothing was streamed (edge case)
-        if result.final_output:
-            yield result.final_output
 
     async def chat_completions_create(
         self,

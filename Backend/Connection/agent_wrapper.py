@@ -4,11 +4,15 @@ from typing import Optional, List, Dict, AsyncGenerator
 from openai import AsyncOpenAI
 from agents import Agent, Runner, ModelSettings, set_default_openai_client, set_tracing_disabled
 from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
+from agents.run_context import RunContextWrapper
 from .models import ChatContext
 from .config import AGENT_TIMEOUT, AGENT_RETRY_ATTEMPTS
+from .guardrails import GuardrailCtx, off_topic_guardrail, _check_off_topic
 import os
 
 logger = logging.getLogger(__name__)
+
+OFF_TOPIC_SENTINEL = "__OFF_TOPIC__"
 
 
 def _build_input_with_memory(
@@ -58,7 +62,14 @@ class AgentWrapper:
 
     async def _call_agent_streamed(self, context: ChatContext) -> AsyncGenerator[str, None]:
         if not self.client:
-            yield "I can only answer questions about the book content. Please ask a question related to the book."
+            yield OFF_TOPIC_SENTINEL
+            return
+
+        is_off_topic = await _check_off_topic(
+            context.user_message, context.effective_context, self.client, self.model_name
+        )
+        if is_off_topic:
+            yield OFF_TOPIC_SENTINEL
             return
 
         instructions = self._build_instructions(context)
@@ -70,7 +81,7 @@ class AgentWrapper:
             name="Book Assistant",
             instructions=instructions,
             model=model_obj,
-            model_settings=ModelSettings(max_tokens=400),
+            model_settings=ModelSettings(max_tokens=150),
         )
 
         input_items = _build_input_with_memory(context.user_message, context.memory)
@@ -80,9 +91,6 @@ class AgentWrapper:
             if event.type == "raw_response_event" and getattr(event.data, 'type', None) == "response.output_text.delta":
                 if event.data.delta:
                     yield event.data.delta
-
-        if result.final_output:
-            yield result.final_output
 
     async def _call_agent_with_retry(self, context: ChatContext) -> str:
         last_error = None
@@ -126,7 +134,23 @@ class AgentWrapper:
             {context.user_message}
 
             If the provided content does not contain the answer, explicitly state that the information is not in the provided content.
-            You MUST write a thorough answer of at most 800 words. You MUST use plain text headings, sub-headings, and bullet points. Do NOT use markdown formatting (no ##, no **, no backticks).
+            Use plain text only. Format each section like this example:
+
+            Based on the provided textbook content, Humanoid Robotics is:
+            - A multidisciplinary field combining mechanical engineering, AI, and cognitive science
+            - Focused on creating machines that mimic human form, movement, and behavior
+            - Designed to operate effectively in human environments
+
+            Key concepts mentioned:
+            - Embodied Intelligence: Intelligence arises from agent-environment interaction
+            - Bipedal Locomotion: Dynamic balance control for two-legged walking
+            - Human-Robot Interaction: Natural interfaces for intuitive communication
+
+            Purpose:
+            Humanoid robots serve as research platforms and practical assistants across healthcare, education, and disaster response, bridging the gap between digital AI and physical action.
+
+            Keep the answer very short (80-100 words, max 2 sections).
+            Do NOT use markdown symbols like #, ##, **, or backticks.
             """
         elif context.retrieved_chunks:
             chunk_texts = [chunk.content for chunk in context.retrieved_chunks]
@@ -144,7 +168,23 @@ class AgentWrapper:
             {context.user_message}
 
             If the provided content does not contain the answer, explicitly state that the information is not in the provided content.
-            You MUST write a thorough answer of at most 800 words. You MUST use plain text headings, sub-headings, and bullet points. Do NOT use markdown formatting (no ##, no **, no backticks).
+            Use plain text only. Format each section like this example:
+
+            Based on the provided textbook content, Humanoid Robotics is:
+            - A multidisciplinary field combining mechanical engineering, AI, and cognitive science
+            - Focused on creating machines that mimic human form, movement, and behavior
+            - Designed to operate effectively in human environments
+
+            Key concepts mentioned:
+            - Embodied Intelligence: Intelligence arises from agent-environment interaction
+            - Bipedal Locomotion: Dynamic balance control for two-legged walking
+            - Human-Robot Interaction: Natural interfaces for intuitive communication
+
+            Purpose:
+            Humanoid robots serve as research platforms and practical assistants across healthcare, education, and disaster response, bridging the gap between digital AI and physical action.
+
+            Keep the answer very short (80-100 words, max 2 sections).
+            Do NOT use markdown symbols like #, ##, **, or backticks.
             """
         else:
             return f"""
@@ -153,41 +193,59 @@ class AgentWrapper:
             Question: {context.user_message}
 
             Since no specific content was provided, explicitly state that you couldn't find relevant content in the book.
-            You MUST write a thorough answer of at most 800 words. You MUST use plain text headings, sub-headings, and bullet points. Do NOT use markdown formatting (no ##, no **, no backticks).
+            Use plain text only. Format each section like this example:
+
+            Based on the provided textbook content, Humanoid Robotics is:
+            - A multidisciplinary field combining mechanical engineering, AI, and cognitive science
+            - Focused on creating machines that mimic human form, movement, and behavior
+            - Designed to operate effectively in human environments
+
+            Key concepts mentioned:
+            - Embodied Intelligence: Intelligence arises from agent-environment interaction
+            - Bipedal Locomotion: Dynamic balance control for two-legged walking
+            - Human-Robot Interaction: Natural interfaces for intuitive communication
+
+            Purpose:
+            Humanoid robots serve as research platforms and practical assistants across healthcare, education, and disaster response, bridging the gap between digital AI and physical action.
+
+            Keep the answer very short (80-100 words, max 2 sections).
+            Do NOT use markdown symbols like #, ##, **, or backticks.
             """
 
     async def _call_agent_internal(self, context: ChatContext) -> str:
         if not self.client:
-            return "I can only answer questions about the book content. Please ask a question related to the book."
+            return OFF_TOPIC_SENTINEL
 
         try:
-            # Off-topic detection via keyword check
-            off_topic_indicators = ["weather", "joke", "unrelated", "random", "movie", "sports", "food"]
-            user_message_lower = context.user_message.lower()
-
-            if any(indicator in user_message_lower for indicator in off_topic_indicators):
-                return "I can only answer questions about the book content. Please ask a question related to the book."
-
             instructions = self._build_instructions(context)
 
             model_obj = OpenAIChatCompletionsModel(
                 model=self.model_name,
                 openai_client=self.client,
             )
+            guardrail_ctx = GuardrailCtx(
+                book_content=context.effective_context,
+                client=self.client,
+                model_name=self.model_name,
+            )
             agent = Agent(
                 name="Book Assistant",
                 instructions=instructions,
                 model=model_obj,
-                model_settings=ModelSettings(max_tokens=400),
+                model_settings=ModelSettings(max_tokens=150),
+                input_guardrails=[off_topic_guardrail],
             )
 
             input_items = _build_input_with_memory(context.user_message, context.memory)
-            result = await Runner.run(agent, input=input_items)
-            generated_text = result.final_output.strip()
+            result = await Runner.run(agent, input=input_items, context=guardrail_ctx)
 
+            if result.guardrail_result and result.guardrail_result.tripwire_triggered:
+                return OFF_TOPIC_SENTINEL
+
+            generated_text = result.final_output.strip()
             logger.info(f"OpenRouter returned: {generated_text[:200]}...")
             return generated_text
 
         except Exception as e:
             logger.error(f"Error calling OpenRouter via Agent SDK: {str(e)}")
-            return "I can only answer questions about the book content. Please ask a question related to the book."
+            return OFF_TOPIC_SENTINEL

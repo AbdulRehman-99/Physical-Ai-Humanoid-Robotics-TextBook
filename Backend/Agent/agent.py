@@ -55,7 +55,23 @@ class RAGAgent:
             1. Answer only based on the provided text
             2. Do not use any external knowledge
             3. If the provided text doesn't contain the answer, say so
-            4. You MUST write a thorough answer of at most 800 words. You MUST use plain text headings, sub-headings, and bullet points. Do NOT use markdown formatting (no ##, no **, no backticks).
+            4. Use plain text only. Format each section like this example:
+
+            Based on the provided textbook content, Humanoid Robotics is:
+            - A multidisciplinary field combining mechanical engineering, AI, and cognitive science
+            - Focused on creating machines that mimic human form, movement, and behavior
+            - Designed to operate effectively in human environments
+
+            Key concepts mentioned:
+            - Embodied Intelligence: Intelligence arises from agent-environment interaction
+            - Bipedal Locomotion: Dynamic balance control for two-legged walking
+            - Human-Robot Interaction: Natural interfaces for intuitive communication
+
+            Purpose:
+            Humanoid robots serve as research platforms and practical assistants across healthcare, education, and disaster response, bridging the gap between digital AI and physical action.
+
+            Keep the answer very short (80-100 words, max 2 sections).
+            Do NOT use markdown symbols like #, ##, **, or backticks.
             """
         else:
             return f"""
@@ -67,7 +83,23 @@ class RAGAgent:
             1. Answer only based on the provided context
             2. Do not use any external knowledge
             3. If the provided context doesn't contain the answer, say so
-            4. You MUST write a thorough answer of at most 800 words. You MUST use plain text headings, sub-headings, and bullet points. Do NOT use markdown formatting (no ##, no **, no backticks).
+            4. Use plain text only. Format each section like this example:
+
+            Based on the provided textbook content, Humanoid Robotics is:
+            - A multidisciplinary field combining mechanical engineering, AI, and cognitive science
+            - Focused on creating machines that mimic human form, movement, and behavior
+            - Designed to operate effectively in human environments
+
+            Key concepts mentioned:
+            - Embodied Intelligence: Intelligence arises from agent-environment interaction
+            - Bipedal Locomotion: Dynamic balance control for two-legged walking
+            - Human-Robot Interaction: Natural interfaces for intuitive communication
+
+            Purpose:
+            Humanoid robots serve as research platforms and practical assistants across healthcare, education, and disaster response, bridging the gap between digital AI and physical action.
+
+            Keep the answer very short (80-100 words, max 2 sections).
+            Do NOT use markdown symbols like #, ##, **, or backticks.
             """
 
     async def process_message(
@@ -180,7 +212,7 @@ class RAGAgent:
             agent = self.adapter.create_agent(
                 instructions=instructions,
                 model=settings.settings.openrouter_model,
-                max_tokens=400,
+                max_tokens=150,
             )
 
             async for token in self.adapter.run_agent_streamed(agent, message, memory):
@@ -203,7 +235,7 @@ class RAGAgent:
             agent = self.adapter.create_agent(
                 instructions=instructions,
                 model=settings.settings.openrouter_model,
-                max_tokens=400,
+                max_tokens=150,
             )
             generated_response = await self.adapter.run_agent(
                 agent, message, memory

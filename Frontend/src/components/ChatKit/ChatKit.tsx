@@ -8,6 +8,7 @@ interface Message {
   role: 'user' | 'assistant';
   timestamp: Date;
   sources?: Array<{text: string, metadata?: any}>;
+  isError?: boolean;
 }
 
 const BACKEND_URLS = [
@@ -16,26 +17,175 @@ const BACKEND_URLS = [
   'https://abdul-rehman-99-textbook.hf.space',
 ];
 
-const ChatKit: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Hello! I\'m your AI assistant for this book. Ask me anything about the content!',
-      role: 'assistant',
-      timestamp: new Date(),
+const MAX_MESSAGES = 100;
+const SESSION_EXPIRY_MS = 48 * 60 * 60 * 1000;
+
+const WELCOME_MESSAGE: Message = {
+  id: '1',
+  content: "Hello! I'm your AI assistant for this book. Ask me anything about the content!",
+  role: 'assistant',
+  timestamp: new Date(),
+};
+
+function getSessionKey(sid: string): string {
+  return `chatkit_session:${sid}`;
+}
+
+function saveSessionMessages(sid: string, msgs: Message[]): void {
+  try {
+    const trimmed = msgs.slice(-MAX_MESSAGES);
+    localStorage.setItem(getSessionKey(sid), JSON.stringify(trimmed));
+  } catch {}
+}
+
+function loadSessionMessages(sid: string): Message[] | null {
+  try {
+    const stored = localStorage.getItem(getSessionKey(sid));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+      }
     }
-  ]);
+  } catch {}
+  return null;
+}
+
+function addSessionToHistory(sid: string, lastActive?: string): void {
+  try {
+    const order: Array<{id: string; lastActive: string}> = JSON.parse(
+      localStorage.getItem('chatkit_sessions_order') || '[]'
+    );
+    const ts = lastActive || new Date().toISOString();
+    const idx = order.findIndex(e => e.id === sid);
+    if (idx >= 0) {
+      order[idx].lastActive = ts;
+    } else {
+      order.unshift({ id: sid, lastActive: ts });
+    }
+    localStorage.setItem('chatkit_sessions_order', JSON.stringify(order));
+  } catch {}
+}
+
+function updateSessionTimestamp(sid: string): void {
+  try {
+    const order: Array<{id: string; lastActive: string}> = JSON.parse(
+      localStorage.getItem('chatkit_sessions_order') || '[]'
+    );
+    const ts = new Date().toISOString();
+    const idx = order.findIndex(e => e.id === sid);
+    if (idx >= 0) {
+      order[idx].lastActive = ts;
+      const [entry] = order.splice(idx, 1);
+      order.unshift(entry);
+    } else {
+      order.unshift({ id: sid, lastActive: ts });
+    }
+    localStorage.setItem('chatkit_sessions_order', JSON.stringify(order));
+  } catch {}
+}
+
+function sweepExpiredSessions(): void {
+  try {
+    const raw = localStorage.getItem('chatkit_sessions_order');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    const now = Date.now();
+    const remaining: Array<{id: string; lastActive: string}> = [];
+    for (const entry of parsed) {
+      const id = typeof entry === 'string' ? entry : entry.id;
+      const lastActive = typeof entry === 'string' ? now : new Date(entry.lastActive || now).getTime();
+      if (now - lastActive >= SESSION_EXPIRY_MS) {
+        localStorage.removeItem(getSessionKey(id));
+      } else {
+        remaining.push(typeof entry === 'string' ? { id: entry, lastActive: new Date(now).toISOString() } : entry);
+      }
+    }
+    localStorage.setItem('chatkit_sessions_order', JSON.stringify(remaining));
+  } catch {}
+}
+
+function getSessionList(): Array<{id: string; preview: string; lastActive: string}> {
+  sweepExpiredSessions();
+  try {
+    const raw = localStorage.getItem('chatkit_sessions_order');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.slice(0, 20).map((entry: any) => {
+      const id = typeof entry === 'string' ? entry : entry.id;
+      const lastActive = typeof entry === 'string' ? new Date().toISOString() : (entry.lastActive || new Date().toISOString());
+      const msgs = loadSessionMessages(id);
+      const userMsg = msgs?.find(m => m.role === 'user');
+      const preview = userMsg ? userMsg.content.slice(0, 50) : '(empty)';
+      return { id, preview, lastActive };
+    });
+  } catch { return []; }
+}
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const ChatKit: React.FC = () => {
+  const [sessionId, setSessionId] = useState<string>(() => {
+    const stored = localStorage.getItem('chatkit_active_session');
+    if (stored) return stored;
+    const newId = crypto.randomUUID();
+    localStorage.setItem('chatkit_active_session', newId);
+    return newId;
+  });
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const sid = localStorage.getItem('chatkit_active_session');
+    if (sid) {
+      const loaded = loadSessionMessages(sid);
+      if (loaded) return loaded;
+    }
+    return [WELCOME_MESSAGE];
+  });
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(() => `session_${Date.now()}`);
+  const [showSessionList, setShowSessionList] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const displayMessages = showHistory
-    ? messages
-    : messages.slice(-6);
+  useEffect(() => {
+    const oldData = localStorage.getItem('chatkit_messages');
+    if (oldData) {
+      try {
+        const parsed = JSON.parse(oldData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem(getSessionKey(sessionId), oldData);
+          addSessionToHistory(sessionId);
+        }
+      } catch {}
+      localStorage.removeItem('chatkit_messages');
+    }
+
+    const raw = localStorage.getItem('chatkit_sessions_order');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+          const migrated = parsed.map((id: string) => ({ id, lastActive: new Date().toISOString() }));
+          localStorage.setItem('chatkit_sessions_order', JSON.stringify(migrated));
+        }
+      } catch {}
+    }
+
+    sweepExpiredSessions();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,7 +193,18 @@ const ChatKit: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, displayMessages.length]);
+  }, [messages]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      sweepExpiredSessions();
+      saveSessionMessages(sessionId, messages);
+      if (messages.length > 1) {
+        updateSessionTimestamp(sessionId);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [messages, sessionId]);
 
   const tryStream = useCallback(async (
     message: string,
@@ -107,8 +268,20 @@ const ChatKit: React.FC = () => {
               } else if (data.done) {
                 if (data.session_id) {
                   setSessionId(data.session_id);
+                  localStorage.setItem('chatkit_active_session', data.session_id);
                 }
                 return { success: true, fullResponse: accumulated };
+              } else if (data.type === "off_topic") {
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const last = updated[updated.length - 1];
+                  if (last && last.role === 'assistant') {
+                    last.content = data.content || 'This question is not related to the book content.';
+                    last.isError = true;
+                  }
+                  return [...updated];
+                });
+                return { success: true, fullResponse: data.content || '' };
               } else if (data.error) {
                 return { success: false };
               }
@@ -134,7 +307,7 @@ const ChatKit: React.FC = () => {
   const tryPost = useCallback(async (
     message: string,
     selectedText: string,
-  ): Promise<{ success: boolean; response?: string; sources?: any[] }> => {
+  ): Promise<{ success: boolean; response?: string; sources?: any[]; is_off_topic?: boolean }> => {
     for (const baseUrl of BACKEND_URLS) {
       const url = `${baseUrl}/chat`;
       try {
@@ -150,7 +323,7 @@ const ChatKit: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          return { success: true, response: data.response, sources: data.sources || [] };
+          return { success: true, response: data.response, sources: data.sources || [], is_off_topic: data.is_off_topic || false };
         }
       } catch (err) {
         console.warn(`POST failed for ${url}:`, err);
@@ -177,19 +350,28 @@ const ChatKit: React.FC = () => {
 
     const selectedText = window.getSelection()?.toString() || '';
 
-    // Try streaming first, fall back to POST
     const streamResult = await tryStream(currentInput, selectedText);
 
     if (!streamResult.success) {
       const postResult = await tryPost(currentInput, selectedText);
       if (postResult.success) {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          content: postResult.response || '',
-          role: 'assistant',
-          timestamp: new Date(),
-          sources: postResult.sources,
-        }]);
+        if (postResult.is_off_topic) {
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            content: postResult.response || '',
+            role: 'assistant',
+            timestamp: new Date(),
+            isError: true,
+          }]);
+        } else {
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            content: postResult.response || '',
+            role: 'assistant',
+            timestamp: new Date(),
+            sources: postResult.sources,
+          }]);
+        }
       } else {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
@@ -203,9 +385,50 @@ const ChatKit: React.FC = () => {
     setIsLoading(false);
   };
 
+  const handleRefresh = () => {
+    sweepExpiredSessions();
+    if (messages.length > 1) {
+      saveSessionMessages(sessionId, messages);
+      updateSessionTimestamp(sessionId);
+    }
+    const newId = crypto.randomUUID();
+    setSessionId(newId);
+    localStorage.setItem('chatkit_active_session', newId);
+    setMessages([{ ...WELCOME_MESSAGE, timestamp: new Date() }]);
+    setShowSessionList(false);
+  };
+
+  const handleLoadSession = (sid: string) => {
+    sweepExpiredSessions();
+    const msgs = loadSessionMessages(sid);
+    if (!msgs || msgs.length === 0) return;
+    if (sessionId !== sid && messages.length > 1) {
+      saveSessionMessages(sessionId, messages);
+      updateSessionTimestamp(sessionId);
+    }
+    setSessionId(sid);
+    localStorage.setItem('chatkit_active_session', sid);
+    setMessages(msgs);
+    setShowSessionList(false);
+  };
+
+  const handleDeleteSession = (e: React.MouseEvent, sid: string) => {
+    e.stopPropagation();
+    try {
+      localStorage.removeItem(getSessionKey(sid));
+      const order: Array<{id: string; lastActive: string}> = JSON.parse(
+        localStorage.getItem('chatkit_sessions_order') || '[]'
+      );
+      const filtered = order.filter(e => e.id !== sid);
+      localStorage.setItem('chatkit_sessions_order', JSON.stringify(filtered));
+    } catch {}
+  };
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const sessionList = getSessionList();
 
   return (
     <div className={`chatkit-wrapper ${isExpanded ? 'expanded' : 'collapsed'}`}>
@@ -232,75 +455,111 @@ const ChatKit: React.FC = () => {
               <div className="status-indicator"></div>
               <h3>AI Assistant</h3>
             </div>
-            <button className="chatkit-close" onClick={toggleExpand} aria-label="Close Assistant">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+            <div className="chatkit-header-actions">
+              <button className="chatkit-icon-btn" onClick={() => setShowSessionList(true)} aria-label="Chat History" title="Chat History">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </button>
+              <button className="chatkit-icon-btn" onClick={handleRefresh} aria-label="New Conversation" title="New Conversation">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <polyline points="1 20 1 14 7 14"/>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+              </button>
+              <button className="chatkit-close" onClick={toggleExpand} aria-label="Close Assistant">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className="chatkit-content">
-            <div className="chatkit-history-bar">
-              <button
-                className="chatkit-history-toggle"
-                onClick={() => setShowHistory(!showHistory)}
-              >
-                {showHistory ? 'Show last 6' : 'Show all'}
-              </button>
-            </div>
-            <div className="chatkit-messages">
-              {displayMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`chatkit-message ${message.role}`}
-                >
-                  <div className="chatkit-message-content">
-                    {message.content}
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="chatkit-sources">
-                        <details>
-                          <summary>Sources</summary>
-                          {message.sources.map((source, index) => (
-                            <div key={index} className="chatkit-source">
-                                {source.text ? source.text.substring(0, 100) : 'No content available'}...
-                            </div>
-                          ))}
-                        </details>
+            {showSessionList ? (
+              <div className="chatkit-session-list">
+                <div className="session-list-header">
+                  <h4>Conversations</h4>
+                  <button onClick={() => setShowSessionList(false)}>Back</button>
+                </div>
+                {sessionList.length > 0 ? (
+                  sessionList.map(s => (
+                    <div key={s.id} className={`session-item${s.id === sessionId ? ' active' : ''}`} onClick={() => handleLoadSession(s.id)}>
+                      <div className="session-info">
+                        <div className="session-preview">{s.preview}</div>
+                        <div className="session-time">{formatRelativeTime(s.lastActive)}</div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {isLoading && messages[messages.length - 1]?.role === 'user' && (
-                <div className="chatkit-message assistant">
-                  <div className="chatkit-message-content">
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
+                      <button className="session-delete" onClick={(e) => handleDeleteSession(e, s.id)} aria-label="Delete conversation">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
                     </div>
-                  </div>
+                  ))
+                ) : (
+                  <div className="session-empty">No saved conversations</div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="chatkit-messages">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`chatkit-message ${message.role}${message.isError ? ' error' : ''}`}
+                    >
+                      <div className="chatkit-message-content">
+                        {message.content}
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="chatkit-sources">
+                            <details>
+                              <summary>Sources</summary>
+                              {message.sources.map((source, index) => (
+                                <div key={index} className="chatkit-source">
+                                    {source.text ? source.text.substring(0, 100) : 'No content available'}...
+                                </div>
+                              ))}
+                            </details>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === 'user' && (
+                    <div className="chatkit-message assistant">
+                      <div className="chatkit-message-content">
+                        <div className="typing-indicator">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
 
-            <form className="chatkit-input-form" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about the book content..."
-                disabled={isLoading}
-              />
-              <button type="submit" disabled={isLoading} className="send-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </form>
+                <form className="chatkit-input-form" onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Ask about the book content..."
+                    disabled={isLoading}
+                  />
+                  <button type="submit" disabled={isLoading} className="send-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
