@@ -1,8 +1,102 @@
-﻿# Claude Code Rules
+# AGENTS.md
 
-This file is generated during init for the selected agent.
+## Quick start
 
-You are an expert AI assistant specializing in Spec-Driven Development (SDD). Your primary goal is to work with the architext to build products.
+```powershell
+# Frontend dev server (Docusaurus)
+cd Frontend; npm start
+
+# Backend orchestrator (starts Connection:8000 + Agent:8001 + Retrieval test)
+cd Backend; uv run python main.py
+
+# Hot-reload (Connection only)
+$env:DEBUG="True"; uv run python app.py
+# Or for all services via main.py: set DEBUG before running
+
+# Single service
+uv run python -m uvicorn Connection.api:app --port 8000
+
+# Tests (Agent)
+cd Backend/Agent; pytest
+
+# Typecheck (Frontend)
+cd Frontend; npm run typecheck
+```
+
+## Architecture
+
+```
+Frontend/  (Docusaurus 3.9.2, React 18, TS)
+  ├── src/components/ChatKit/  — SSE streaming chat UI, localStorage multi-session, 48h auto-delete
+  ├── static/img/              — 3 referenced + 12 unreferenced images
+  └── assets/                  — 3 Gazebo/URDF sim files (unused in code)
+Backend/   (Python 3.13, uv workspace)
+  ├── Connection/              — Primary user-facing API (port 8000), consumed by ChatKit
+  │   ├── api.py               — FastAPI app: POST /chat, POST /chat/stream, GET /health
+  │   ├── agent_wrapper.py     — OpenRouter via OpenAIChatCompletionsModel, max_tokens=150, off-topic guardrail
+  │   ├── guardrails.py        — LLM-based off-topic classification (@input_guardrail)
+  │   ├── context_switcher.py  — uses sys.path hack to import Retrieval/src/
+  │   └── config.py            — TOP_K=3, SESSION_MEMORY_TURNS=5, SESSION_TTL=1800s
+  ├── Agent/                   — Standalone RAG Agent (port 8001), also sys.path-hacks Retrieval
+  │   ├── main.py              — /chat + /chat/stream + /health endpoints
+  │   ├── agent.py             — RAGAgent with process_message / process_message_streamed
+  │   ├── adapter.py           — OpenRouterAdapter (shared client pattern)
+  │   └── error_handling.py    — DEAD PRODUCTION CODE: only imported by test_core_functionality.py
+  ├── Ingestion/               — Book → Qdrant pipeline (excluded from analysis)
+  ├── Retrieval/               — Vector search service (excluded from analysis)
+  │   └── src/retrieval/       — imported via sys.path hack, not as a pip package
+  ├── main.py                  — Orchestrator: spawns 3 processes (retrieval test, Agent:8001, Connection:8000)
+  └── app.py                   — HF Spaces entry point (port 7860, Connection only)
+```
+
+### Key design facts
+
+- **Both services use OpenRouter** via `OpenAIChatCompletionsModel`, not the default Responses API (OpenRouter ignores `instructions` and `max_output_tokens` on `/v1/responses`).
+- **max_tokens=150** everywhere — targets 80–100 word answers.
+- **Off-topic guardrail at both layers**: Connection uses SDK `@input_guardrail` + manual check in streamed path; Agent uses its own `check_off_topic()` via ChatCompletions.
+- **Session memory**: last 5 turns in-memory dict, 30-min idle TTL (Connection), UUID session_id.
+- **ChatKit frontend**: SSE via `ReadableStream`, localStorage multi-session with 48h auto-delete, SSR-safe `try/catch` around all `localStorage` calls.
+- **Docusaurus SSR constraint**: no `localStorage`/`window` in module scope — all browser-API calls need `try/catch`.
+- **Conversation formatting**: plain text only (no markdown symbols), colon-label format for headers.
+
+### Python import quirks
+
+Both `Connection/context_switcher.py` and `Agent/agent.py` inject `Retrieval/src/` into `sys.path` before importing `from retrieval import ...`. This means:
+- The Retrieval package is NOT importable by name unless the path hack runs first.
+- Running `uvicorn Connection.api:app` from the `Backend/` root works because `Connection/__init__.py` triggers path manipulation via `context_switcher.py`.
+- If a file is moved or a new service added, this sys.path hack must be replicated.
+
+## Environment
+
+| Variable | Where used | Required |
+|---|---|---|
+| `OPENROUTER_API_KEY` | Both services | Yes |
+| `OPENROUTER_BASE_URL` | Both services | Yes (default: `https://openrouter.ai/api/v1`) |
+| `OPENROUTER_MODEL` | Both services | Yes (default: `qwen-2.5-72b-instruct`) |
+| `COHERE_API_KEY` | Ingestion/Agent | Yes |
+| `QDRANT_API_KEY` | Ingestion/Retrieval | Yes |
+| `QDRANT_URL` | Ingestion/Retrieval | Yes |
+| `COLLECTION_NAME` | Ingestion/Retrieval | Yes (default: `book_embeddings`) |
+| `TOP_K` | Both services | Default `3` |
+| `DEBUG` | Any entry point | `True` enables hot-reload |
+
+`.env` is loaded from the repo root. Both services search multiple parent directories.
+
+## Deployment
+
+- **Vercel** (frontend only): `vercel.json` runs `cd Frontend && npm install && npm run build`, output `Frontend/build`.
+- **Hugging Face Spaces** (backend only): Dockerfile at `Backend/Dockerfile`, port 7860, entry `python app.py`.
+- **Backend URL in frontend**: hardcoded in `ChatKit.tsx:14-18` (`BACKEND_URLS` array) and `docusaurus.config.ts:31` (`customFields.backendUrl`).
+
+## Notable dead / unused code
+
+- `Backend/Agent/error_handling.py` — CircuitBreaker + Qdrant error decorator, only imported by test file, not by any production code.
+- `Frontend/static/img/` — 12 SVG/PNG files with zero references in source (including `favicon.ico`, `logo.svg`, 3 `undraw_docusaurus_*` defaults).
+- `Frontend/assets/` — 3 Gazebo/URDF sim files (`default_world.sdf`, `humanoid_robot.urdf`, `vla_world.sdf`) not referenced in any code.
+
+# opencode Rules — SDD Workflow
+
+This section encodes the Spec-Driven Development (SDD) workflow: PHR creation, ADR suggestions, architectural planning, and execution contracts.
 
 ## Task context
 
@@ -113,7 +207,7 @@ You are not expected to solve every problem autonomously. You MUST invoke the us
 1.  **Ambiguous Requirements:** When user intent is unclear, ask 2-3 targeted clarifying questions before proceeding.
 2.  **Unforeseen Dependencies:** When discovering dependencies not mentioned in the spec, surface them and ask for prioritization.
 3.  **Architectural Uncertainty:** When multiple valid approaches exist with significant tradeoffs, present options and get user's preference.
-4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps. 
+4.  **Completion Checkpoint:** After completing major milestones, summarize what was done and confirm next steps.
 
 ## Default policies (must follow)
 - Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.

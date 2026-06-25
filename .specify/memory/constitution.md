@@ -1,72 +1,55 @@
-<!--
-Sync Impact Report:
-Version change: 1.1.0 -> 1.2.0
-List of modified principles: Added Book RAG Chatbot component principles
-Added sections: Book RAG Chatbot Component Principles
-Removed sections: N/A
-Templates requiring updates:
-- .specify/templates/plan-template.md: ⚠ pending
-- .specify/templates/spec-template.md: ⚠ pending
-- .specify/templates/tasks-template.md: ⚠ pending
-- .specify/commands/sp.adr.toml: ⚠ pending
-- .specify/commands/sp.analyze.toml: ⚠ pending
-- .specify/commands/sp.checklist.toml: ⚠ pending
-- .specify/commands/sp.clarify.toml: ⚠ pending
-- .specify/commands/sp.constitution.toml: ⚠ pending
-- .specify/commands/sp.git.commit_pr.toml: ⚠ pending
-- .specify/commands/sp.implement.toml: ⚠ pending
-- .specify/commands/sp.phr.toml: ⚠ pending
-- .specify/commands/sp.plan.toml: ⚠ pending
-- .specify/commands/sp.specify.toml: ⚠ pending
-- .specify/commands/sp.tasks.toml: ⚠ pending
-- README.md: ⚠ pending
-- docs/quickstart.md: ⚠ pending
-Follow-up TODOs: Ensure dependent templates are updated to align with the updated constitution principles.
--->
-# High-Performance Technical Book Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### 1. Module Alignment
-Align strictly with the "Physical AI & Humanoid Robotics" course modules and learning outcomes.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### 2. Academic Reliability
-Maintain academically reliable, technical writing using verified robotics sources and primary documentation.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### 3. Terminology Consistency
-Ensure consistent terminology across ROS 2, URDF/Xacro, controllers, Gazebo, Unity, Isaac Sim, Isaac ROS, Nav2, Whisper, and VLA systems.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### 4. Precise Citations
-Cite official robotics manuals, ROS REP standards, peer-reviewed papers, and vendor docs with precise references.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
 
-### 5. Clarity and Reproducibility
-Provide clean examples, reproducible steps, and accurate system descriptions for every concept.
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
-### 6. Content Exclusions
-Exclude speculation, filler, non-verifiable statements, or untested workflows.
+### [PRINCIPLE_6_NAME]
 
-### 7. Approved Toolchain
-Use only the approved book-writing toolchain: Docusaurus v3.9.
 
-### 8. Predictable Chapter Pattern
-Enforce a predictable chapter pattern: Concept explanation → Diagram/code → Applied example → References.
+[PRINCIPLE__DESCRIPTION]
 
-### 9. Real-world Robotics Conventions
-Ensure diagrams and code samples follow real-world robotics conventions and compile/run where applicable.
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 
-### 10. Accessibility and Structure
-Require accessibility: consistent formatting, glossary of robotics terms, and modular chapter independence.
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
 
-### 11. Docusaurus Best Practices
-Follow official Docusaurus documentation https://docusaurus.io/docs for structure, navigation, deployment, theming, and content organization.
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
 
-### 12. Chapter Independence
-Guarantee that every chapter can be generated independently while still conforming to the global constitution.
-
-### 13. Book Structure and Chapter Requirements
-The book contain 8 chapters total across 4 modules. Each chapter will be at least 2500 words long having a headings, subheadings, paragraphs, and examples.
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
-The Constitution establishes the foundational principles for the development and maintenance of the 'High-Performance Technical Book' and its associated Book RAG Chatbot. All content creation, bot responses, and modifications must adhere to these principles. Amendments to this constitution require a formal proposal, review by the project leads, and documented approval. Compliance with these principles will be reviewed regularly to ensure the academic and technical integrity of the book and chatbot. Any divergence from these guidelines must be explicitly justified and approved by the project leads.
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-**Version**: 1.2.0 | **Ratified**: 2025-12-09 | **Last Amended**: 2025-12-16
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
