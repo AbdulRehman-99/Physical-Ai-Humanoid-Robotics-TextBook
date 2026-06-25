@@ -139,18 +139,22 @@ function formatRelativeTime(iso: string): string {
 
 const ChatKit: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>(() => {
-    const stored = localStorage.getItem('chatkit_active_session');
-    if (stored) return stored;
+    try {
+      const stored = localStorage.getItem('chatkit_active_session');
+      if (stored) return stored;
+    } catch {}
     const newId = crypto.randomUUID();
-    localStorage.setItem('chatkit_active_session', newId);
+    try { localStorage.setItem('chatkit_active_session', newId); } catch {}
     return newId;
   });
   const [messages, setMessages] = useState<Message[]>(() => {
-    const sid = localStorage.getItem('chatkit_active_session');
-    if (sid) {
-      const loaded = loadSessionMessages(sid);
-      if (loaded) return loaded;
-    }
+    try {
+      const sid = localStorage.getItem('chatkit_active_session');
+      if (sid) {
+        const loaded = loadSessionMessages(sid);
+        if (loaded) return loaded;
+      }
+    } catch {}
     return [WELCOME_MESSAGE];
   });
   const [inputValue, setInputValue] = useState('');
@@ -161,13 +165,24 @@ const ChatKit: React.FC = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    const savedSid = localStorage.getItem('chatkit_active_session');
+    const sid = savedSid || crypto.randomUUID();
+    if (!savedSid) {
+      localStorage.setItem('chatkit_active_session', sid);
+    }
+    if (sid !== sessionId) {
+      setSessionId(sid);
+      const loaded = loadSessionMessages(sid);
+      if (loaded) setMessages(loaded);
+    }
+
     const oldData = localStorage.getItem('chatkit_messages');
     if (oldData) {
       try {
         const parsed = JSON.parse(oldData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          localStorage.setItem(getSessionKey(sessionId), oldData);
-          addSessionToHistory(sessionId);
+          localStorage.setItem(getSessionKey(sid), oldData);
+          addSessionToHistory(sid);
         }
       } catch {}
       localStorage.removeItem('chatkit_messages');
