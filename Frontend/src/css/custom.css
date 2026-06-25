@@ -50,27 +50,45 @@
 
   /* Cards and containers */
   --ifm-card-background-color: #ffffff;
-  --ifm-card-border-radius: 12px;
-  --ifm-card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --ifm-card-border-radius: 16px;
+  --ifm-card-shadow: 0px 2px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.06);
 
   /* Navbar */
-  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --ifm-navbar-shadow: 0px 2px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.06);
 
   /* Sidebar */
   --ifm-menu-color-background-active: rgba(37, 99, 235, 0.1);
   --ifm-menu-color-background-hover: rgba(37, 99, 235, 0.05);
+
+  /* Glassmorphism surfaces */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-bg-active: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.12);
+  --glass-blur: 12px;
+
+  /* Multi-layer shadow levels */
+  --shadow-level-1: 0px 2px 4px rgba(0, 0, 0, 0.08), 0px 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-level-2: 0px 4px 8px rgba(0, 0, 0, 0.1), 0px 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-level-3: 0px 8px 16px rgba(0, 0, 0, 0.12), 0px 16px 32px rgba(0, 0, 0, 0.1);
+  --shadow-level-4: 0px 12px 24px rgba(0, 0, 0, 0.15), 0px 24px 48px rgba(0, 0, 0, 0.12);
+
+  /* Glow effects */
+  --glow-primary: 0 0 20px rgba(37, 99, 235, 0.3);
+  --glow-cyan: 0 0 20px rgba(6, 182, 212, 0.3);
 }
 
-/* Dark mode improvements */
+/* Dark mode - Midnight Blue palette with glassmorphism */
 [data-theme='dark'] {
-  /* Primary colors - adjusted for dark mode */
-  --ifm-color-primary: #3b82f6;
-  --ifm-color-primary-dark: #2563eb;
-  --ifm-color-primary-darker: #1e40af;
-  --ifm-color-primary-darkest: #1e3a8a;
-  --ifm-color-primary-light: #60a5fa;
-  --ifm-color-primary-lighter: #93c5fd;
-  --ifm-color-primary-lightest: #bfdbfe;
+  /* Primary colors - Electric Cyan accent for futuristic tech */
+  --ifm-color-primary: #06b6d4;
+  --ifm-color-primary-dark: #0891b2;
+  --ifm-color-primary-darker: #0e7490;
+  --ifm-color-primary-darkest: #155e75;
+  --ifm-color-primary-light: #22d3ee;
+  --ifm-color-primary-lighter: #67e8f9;
+  --ifm-color-primary-lightest: #a5f3fc;
 
   /* Secondary colors - adjusted for dark mode */
   --ifm-color-secondary: #94a3b8;
@@ -81,14 +99,18 @@
   --ifm-color-secondary-lighter: #e2e8f0;
   --ifm-color-secondary-lightest: #f1f5f9;
 
-  /* Backgrounds */
-  --ifm-background-color: #0f172a;
-  --ifm-background-surface-color: #1e293b;
-  --ifm-navbar-background-color: #0f172a;
-  --ifm-footer-background-color: var(--ifm-color-emphasis-800);
-  --ifm-card-background-color: #1e293b;
+  /* Accent - Electric Cyan */
+  --ifm-color-accent: #06b6d4;
 
-  /* Text colors */
+  /* Backgrounds - Midnight Blue deep navy */
+  --ifm-background-color: #0A0E1A;
+  --ifm-background-surface-color: #0F1420;
+  --ifm-navbar-background-color: rgba(10, 14, 26, 0.85);
+  --ifm-footer-background-color: rgba(10, 14, 26, 0.95);
+  --ifm-card-background-color: rgba(255, 255, 255, 0.05);
+  --ifm-toc-border-color: rgba(255, 255, 255, 0.08);
+
+  /* Text colors - increased opacity for better contrast on dark */
   --ifm-color-emphasis-0: #f8fafc;
   --ifm-color-emphasis-100: #f1f5f9;
   --ifm-color-emphasis-200: #e2e8f0;
@@ -98,16 +120,27 @@
   --ifm-color-emphasis-600: #475569;
   --ifm-color-emphasis-700: #334155;
   --ifm-color-emphasis-800: #1e293b;
-  --ifm-color-emphasis-900: #0f172a;
+  --ifm-color-emphasis-900: #0A0E1A;
 
   /* Code styling */
   --ifm-code-background: rgba(30, 41, 59, 0.7);
   --ifm-code-color: #e2e8f0;
   --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
 
-  /* Shadows */
-  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-  --ifm-card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  /* Shadows - deeper for dark mode */
+  --ifm-navbar-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3), 0px 8px 16px rgba(0, 0, 0, 0.2);
+  --ifm-card-shadow: 0px 4px 8px rgba(0, 0, 0, 0.25), 0px 8px 16px rgba(0, 0, 0, 0.15);
+
+  /* Glass surfaces - dark mode overrides */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --glass-bg-active: rgba(255, 255, 255, 0.10);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-strong: rgba(255, 255, 255, 0.10);
+
+  /* Glow effects for dark mode */
+  --glow-primary: 0 0 20px rgba(6, 182, 212, 0.3);
+  --glow-cyan: 0 0 20px rgba(6, 182, 212, 0.4);
 }
 
 /* Enhanced typography and spacing */
@@ -118,28 +151,40 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
+/* Glassmorphism utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--ifm-card-border-radius, 16px);
+}
+
 /* Modern card styling */
 .card {
   border: none;
   box-shadow: var(--ifm-card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
   overflow: hidden;
   background-color: var(--ifm-card-background-color);
   border-radius: var(--ifm-card-border-radius);
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-level-3);
 }
 
 /* Enhanced feature cards for homepage */
 .feature-card {
   background: var(--ifm-card-background-color);
-  border-radius: 16px;
+  backdrop-filter: blur(8px) saturate(160%);
+  -webkit-backdrop-filter: blur(8px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
   padding: 2rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -156,7 +201,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-accent));
+  background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-accent, #0ea5e9));
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
@@ -166,8 +211,8 @@
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-level-3), var(--glow-primary);
 }
 
 .feature-card-icon {
@@ -176,16 +221,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--ifm-color-primary-lightest, #93c5fd), var(--ifm-color-primary-lighter, #60a5fa));
+  background: linear-gradient(135deg, var(--ifm-color-primary-lightest), var(--ifm-color-primary-lighter));
   border-radius: 50%;
   margin-bottom: 1.5rem;
   color: var(--ifm-color-primary);
   font-size: 1.5rem;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
 }
 
 [data-theme='dark'] .feature-card-icon {
-  background: linear-gradient(135deg, var(--ifm-color-primary-darker, #1e40af), var(--ifm-color-primary-dark, #1d4ed8));
-  color: var(--ifm-color-primary-lighter);
+  background: linear-gradient(135deg, var(--ifm-color-primary), var(--ifm-color-primary-dark));
+  color: #fff;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
 }
 
 /* Enhanced button variants */
@@ -198,8 +245,8 @@
 .button--primary:hover {
   background-color: var(--ifm-color-primary-dark);
   border-color: var(--ifm-color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.4);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-primary);
 }
 
 .button--outline {
@@ -312,11 +359,7 @@
 
 /* Glowing effect */
 .glow {
-  box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
-}
-
-[data-theme='dark'] .glow {
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  box-shadow: var(--glow-primary);
 }
 
 /* Enhanced input styling */
@@ -333,7 +376,7 @@
 .form-input:focus {
   outline: none;
   border-color: var(--ifm-color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2), var(--glow-primary);
 }
 
 [data-theme='dark'] .form-input {
@@ -459,14 +502,14 @@
 
 /* Modern button styling */
 .button {
-  border-radius: 6px;
+  border-radius: 10px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-level-2);
 }
 
 /* Improved table styling */
@@ -732,7 +775,7 @@ textarea:focus-visible,
 summary:focus-visible {
   outline: 2px solid var(--ifm-color-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25);
 }
 
 /* Remove focus styles for mouse users (based on preference) */
@@ -745,23 +788,23 @@ summary:focus-visible {
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   :root {
-    --ifm-color-primary: #0066cc;
-    --ifm-color-primary-dark: #004c99;
-    --ifm-color-primary-darker: #003366;
-    --ifm-color-primary-darkest: #001933;
-    --ifm-color-primary-light: #3399ff;
-    --ifm-color-primary-lighter: #66ccff;
-    --ifm-color-primary-lightest: #99e6ff;
+    --ifm-color-primary: #1a73e8;
+    --ifm-color-primary-dark: #1557b0;
+    --ifm-color-primary-darker: #0f3d78;
+    --ifm-color-primary-darkest: #0a2540;
+    --ifm-color-primary-light: #4a90e2;
+    --ifm-color-primary-lighter: #7aadec;
+    --ifm-color-primary-lightest: #aac9f6;
   }
 
   [data-theme='dark'] {
-    --ifm-color-primary: #3399ff;
-    --ifm-color-primary-dark: #0066cc;
-    --ifm-color-primary-darker: #004c99;
-    --ifm-color-primary-darkest: #003366;
-    --ifm-color-primary-light: #66ccff;
-    --ifm-color-primary-lighter: #99e6ff;
-    --ifm-color-primary-lightest: #cceeff;
+    --ifm-color-primary: #4a90e2;
+    --ifm-color-primary-dark: #1a73e8;
+    --ifm-color-primary-darker: #1557b0;
+    --ifm-color-primary-darkest: #0f3d78;
+    --ifm-color-primary-light: #7aadec;
+    --ifm-color-primary-lighter: #aac9f6;
+    --ifm-color-primary-lightest: #d0e4fc;
   }
 
   .navbar__item,

@@ -6,7 +6,7 @@
 .sidebar {
   width: var(--doc-sidebar-width);
   background-color: var(--ifm-background-surface-color);
-  border-right: 1px solid var(--ifm-toc-border-color);
+  border-right: 1px solid var(--glass-border);
   height: calc(100vh - var(--ifm-navbar-height));
   position: sticky;
   top: var(--ifm-navbar-height);
@@ -56,21 +56,23 @@
   margin: 0.125rem 0.5rem;
   text-decoration: none;
   color: var(--ifm-color-emphasis-800);
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   font-size: 0.9rem;
   line-height: 1.5;
+  position: relative;
 }
 
 .sidebarLink:hover {
-  background-color: var(--ifm-menu-color-background-hover);
+  background-color: var(--glass-bg-hover);
   color: var(--ifm-color-primary);
 }
 
 .sidebarLinkActive {
-  background-color: var(--ifm-menu-color-background-active);
+  background-color: var(--glass-bg-active);
   color: var(--ifm-color-primary);
   font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--ifm-color-primary);
 }
 
 .sidebarLinkText {
@@ -198,7 +200,7 @@
 /* Dark mode adjustments */
 [data-theme='dark'] .sidebar {
   background-color: var(--ifm-background-surface-color);
-  border-right-color: var(--ifm-toc-border-color);
+  border-right-color: var(--glass-border);
 }
 
 [data-theme='dark'] .sidebarLink {
@@ -206,7 +208,8 @@
 }
 
 [data-theme='dark'] .sidebarLink:hover {
-  color: var(--ifm-color-primary-lighter);
+  color: var(--ifm-color-primary);
+  background-color: var(--glass-bg-hover);
 }
 
 [data-theme='dark'] .sidebarCategory {
@@ -229,20 +232,21 @@
 }
 
 .sidebarItemNested .sidebarLink:hover {
-  background-color: var(--ifm-color-emphasis-100);
+  background-color: var(--glass-bg-hover);
 }
 
 [data-theme='dark'] .sidebarItemNested .sidebarLink:hover {
-  background-color: var(--ifm-color-emphasis-800);
+  background-color: var(--glass-bg-hover);
 }
 
 /* Active state for nested items */
 .sidebarItemNested .sidebarLinkActive {
-  background-color: var(--ifm-color-emphasis-200);
+  background-color: var(--glass-bg-active);
+  box-shadow: inset 3px 0 0 var(--ifm-color-primary);
 }
 
 [data-theme='dark'] .sidebarItemNested .sidebarLinkActive {
-  background-color: var(--ifm-color-emphasis-700);
+  background-color: var(--glass-bg-active);
 }
 
 /* Scrollbar styling */
@@ -251,21 +255,21 @@
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: var(--ifm-color-emphasis-100);
+  background: transparent;
   border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: var(--ifm-color-emphasis-400);
+  background: var(--glass-border-strong);
   border-radius: 3px;
 }
 
 [data-theme='dark'] .sidebar::-webkit-scrollbar-track {
-  background: var(--ifm-color-emphasis-800);
+  background: transparent;
 }
 
 [data-theme='dark'] .sidebar::-webkit-scrollbar-thumb {
-  background: var(--ifm-color-emphasis-600);
+  background: var(--glass-border-strong);
 }
 
 /* Animation for expanding/collapsing */
