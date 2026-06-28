@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import ListenButton from '../Audio/ListenButton';
+import { useAudio } from '../../hooks/useAudio';
 import './ChatKit.css';
 
 interface Message {
@@ -166,6 +167,7 @@ const ChatKit: React.FC = () => {
   const [showSessionList, setShowSessionList] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { stop: stopAudio } = useAudio();
 
   useEffect(() => {
     const savedSid = localStorage.getItem('chatkit_active_session');
@@ -404,6 +406,7 @@ const ChatKit: React.FC = () => {
   };
 
   const handleRefresh = () => {
+    stopAudio();
     sweepExpiredSessions();
     if (messages.length > 1) {
       saveSessionMessages(sessionId, messages);
@@ -417,6 +420,7 @@ const ChatKit: React.FC = () => {
   };
 
   const handleLoadSession = (sid: string) => {
+    stopAudio();
     sweepExpiredSessions();
     const msgs = loadSessionMessages(sid);
     if (!msgs || msgs.length === 0) return;
@@ -443,6 +447,7 @@ const ChatKit: React.FC = () => {
   };
 
   const toggleExpand = () => {
+    if (isExpanded) stopAudio();
     setIsExpanded(!isExpanded);
   };
 
