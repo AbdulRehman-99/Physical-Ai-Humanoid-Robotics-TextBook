@@ -10,12 +10,13 @@ interface UseAudioReturn {
   restart: () => Promise<void>;
 }
 
-const BACKEND_URLS = [
-  'http://localhost:8000',
-  'http://localhost:8001',
-  'http://localhost:8002',
-  'https://abdul-rehman-99-textbook.hf.space',
-];
+const isProduction = typeof window !== 'undefined' &&
+  window.location.hostname !== 'localhost' &&
+  !window.location.hostname.startsWith('127.');
+
+const BACKEND_URLS = isProduction
+  ? ['https://abdul-rehman-99-textbook.hf.space']
+  : ['http://localhost:8000', 'http://localhost:8001', 'http://localhost:8002'];
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentKey: string | null = null;
@@ -81,6 +82,8 @@ export function useAudio(): UseAudioReturn {
     setState('loading');
     setError(null);
 
+    let lastError: any = null;
+
     for (const baseUrl of BACKEND_URLS) {
       try {
         const response = await fetch(`${baseUrl}/tts`, {
@@ -138,13 +141,15 @@ export function useAudio(): UseAudioReturn {
 
       } catch (err: any) {
         console.warn(`TTS failed for ${baseUrl}:`, err);
-        if (mountedRef.current) {
-          setState('error');
-          setError(err.message || 'Failed to generate speech');
-          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-          errorTimerRef.current = setTimeout(resetError, 3000);
-        }
+        lastError = err;
       }
+    }
+
+    if (mountedRef.current && lastError) {
+      setState('error');
+      setError(lastError.message || 'Failed to generate speech');
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = setTimeout(resetError, 3000);
     }
   }, [resetError]);
 

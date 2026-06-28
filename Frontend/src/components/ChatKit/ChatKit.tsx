@@ -12,12 +12,13 @@ interface Message {
   isError?: boolean;
 }
 
-const BACKEND_URLS = [
-  'http://localhost:8000',
-  'http://localhost:8001',
-  'http://localhost:8002',
-  'https://abdul-rehman-99-textbook.hf.space',
-];
+const isProduction = typeof window !== 'undefined' &&
+  window.location.hostname !== 'localhost' &&
+  !window.location.hostname.startsWith('127.');
+
+const BACKEND_URLS = isProduction
+  ? ['https://abdul-rehman-99-textbook.hf.space']
+  : ['http://localhost:8000', 'http://localhost:8001', 'http://localhost:8002'];
 
 const MAX_MESSAGES = 100;
 const SESSION_EXPIRY_MS = 48 * 60 * 60 * 1000;
