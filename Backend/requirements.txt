@@ -10,3 +10,4 @@ cohere
 openai-agents
 pytest
 pydantic-settings
+edge-tts

@@ -551,3 +551,110 @@
     padding: 12px 16px 24px 16px;
   }
 }
+
+/* Listen Button — base */
+.listen-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.listen-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Header variant */
+.listen-button.header {
+  color: var(--chatkit-text-muted);
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.listen-button.header:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--chatkit-primary);
+}
+
+.listen-button.header.playing {
+  color: #10b981;
+}
+
+.listen-button.header.playing:hover {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.listen-button.header.error {
+  color: #ef4444;
+}
+
+/* Message variant — sits inline at end of assistant content */
+.listen-button.message {
+  color: var(--chatkit-text-muted);
+  margin-top: 8px;
+  opacity: 0.7;
+  padding: 4px 6px;
+}
+
+.listen-button.message:hover {
+  opacity: 1;
+  color: var(--chatkit-primary);
+}
+
+.listen-button.message.playing {
+  color: #10b981;
+  opacity: 1;
+}
+
+.listen-button.message.error {
+  color: #ef4444;
+  opacity: 1;
+}
+
+/* Listen button group — side-by-side layout when paused */
+.listen-button-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Restart variant */
+.listen-button.restart {
+  color: var(--chatkit-text-muted);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.listen-button.restart.header:hover {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.listen-button.restart.message {
+  opacity: 0.7;
+}
+
+.listen-button.restart.message:hover {
+  opacity: 1;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+/* Spinner animation */
+@keyframes listen-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.listen-spinner {
+  animation: listen-spin 1s linear infinite;
+}

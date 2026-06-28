@@ -15,6 +15,7 @@ dependencies = [
     "openai-agents",
     "pytest",
     "pydantic-settings",
+    "edge-tts",
 ]
 
 [build-system]

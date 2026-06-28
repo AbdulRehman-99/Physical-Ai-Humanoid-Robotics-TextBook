@@ -17,6 +17,7 @@ from .models import ChatRequest, ChatResponse, ChatContext
 from .agent_wrapper import AgentWrapper, OFF_TOPIC_SENTINEL
 from .context_switcher import ContextSwitcher
 from .response_formatter import ResponseFormatter
+from .tts_router import tts_router
 from .config import (
     TIMEOUT_SECONDS, RETRY_ATTEMPTS,
     RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW,
@@ -97,6 +98,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register TTS router
+app.include_router(tts_router)
 
 # Initialize components
 agent_wrapper = AgentWrapper()

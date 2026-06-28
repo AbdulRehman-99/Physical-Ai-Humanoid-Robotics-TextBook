@@ -38,3 +38,10 @@ class ChatContext(BaseModel):
     selected_text: Optional[str] = None
     effective_context: str
     memory: Optional[List[dict]] = None
+
+
+class TTSRequest(BaseModel):
+    """Request model for TTS synthesis"""
+    text: str
+    voice: Optional[str] = None
+    rate: Optional[str] = None

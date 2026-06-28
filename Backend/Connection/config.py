@@ -17,3 +17,9 @@ AGENT_RETRY_ATTEMPTS = 3  # Retry attempts for agent calls
 # Session configuration
 SESSION_MEMORY_TURNS = 5  # Number of conversation turns to keep in memory
 SESSION_TTL_SECONDS = 1800  # Session idle timeout (30 min)
+
+# TTS configuration
+TTS_ENABLED = True
+TTS_DEFAULT_VOICE = "en-US-AvaNeural"
+TTS_TIMEOUT_SECONDS = 30
+TTS_MAX_TEXT_LENGTH = 5000

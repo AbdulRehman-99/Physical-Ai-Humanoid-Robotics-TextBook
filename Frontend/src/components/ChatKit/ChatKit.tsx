@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import ListenButton from '../Audio/ListenButton';
 import './ChatKit.css';
 
 interface Message {
@@ -13,6 +14,7 @@ interface Message {
 
 const BACKEND_URLS = [
   'http://localhost:8000',
+  'http://localhost:8001',
   'http://localhost:8002',
   'https://abdul-rehman-99-textbook.hf.space',
 ];
@@ -445,6 +447,13 @@ const ChatKit: React.FC = () => {
 
   const sessionList = getSessionList();
 
+  const lastAssistantMessage = useMemo(() => {
+    const assistantMsgs = messages.filter(
+      m => m.role === 'assistant' && !m.isError && m.content
+    );
+    return assistantMsgs.length > 0 ? assistantMsgs[assistantMsgs.length - 1] : null;
+  }, [messages]);
+
   return (
     <div className={`chatkit-wrapper ${isExpanded ? 'expanded' : 'collapsed'}`}>
       {!isExpanded && (
@@ -471,6 +480,13 @@ const ChatKit: React.FC = () => {
               <h3>AI Assistant</h3>
             </div>
             <div className="chatkit-header-actions">
+              {lastAssistantMessage && (
+                <ListenButton
+                  text={lastAssistantMessage.content}
+                  messageId={lastAssistantMessage.id}
+                  variant="header"
+                />
+              )}
               <button className="chatkit-icon-btn" onClick={() => setShowSessionList(true)} aria-label="Chat History" title="Chat History">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
@@ -529,6 +545,11 @@ const ChatKit: React.FC = () => {
                     >
                       <div className="chatkit-message-content">
                         {message.content}
+                        {message.role === 'assistant' && !message.isError && message.content && (
+                          <div className="message-listen">
+                            <ListenButton text={message.content} messageId={message.id} variant="message" />
+                          </div>
+                        )}
                         {message.sources && message.sources.length > 0 && (
                           <div className="chatkit-sources">
                             <details>
